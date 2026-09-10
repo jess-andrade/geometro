@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+:root { --ink:#17201d; --muted:#68736f; --line:#dfe5e1; --paper:#f5f7f4; --green:#176b52; }
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-geist-sans), Arial, sans-serif; }
+button, input, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+::selection { background: #c7e3d8; }
+.maplibregl-ctrl-group { border:1px solid #d9e1dc !important; box-shadow:0 8px 24px rgb(20 39 32 / 10%) !important; }
+.maplibregl-ctrl-attrib { font-size:10px !important; }
+.soft-scrollbar::-webkit-scrollbar { width:8px; height:8px; }
+.soft-scrollbar::-webkit-scrollbar-thumb { background:#cfd8d3; border-radius:999px; }
+@keyframes fade-up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.animate-in { animation:fade-up .38s ease-out both; }

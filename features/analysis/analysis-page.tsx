@@ -1,0 +1,12 @@
+import { BarChart3, Info, Route, TrainFront } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
+
+const ranges = ['0–50 m','50–100 m','100–250 m','250–500 m','500–1.000 m','> 1.000 m'];
+
+export function AnalysisPage() {
+  return <section className="animate-in p-4 sm:p-6 lg:p-8"><PageHeader eyebrow="Exploração quantitativa" title="Análises" description="Compare padrões de proximidade e prepare evidências para a investigação econômica."/>
+    <div className="mb-4 rounded-2xl border border-[#d9e4de] bg-[#edf5f0] p-4"><p className="flex items-start gap-2 text-xs leading-5 text-[#496158]"><Info size={15} className="mt-0.5 shrink-0 text-[#176b52]"/><span><strong>Faixas exploratórias.</strong> Os intervalos abaixo são parâmetros iniciais configuráveis e não representam uma definição científica definitiva.</span></p><div className="mt-3 flex flex-wrap gap-2">{ranges.map((range,index)=><span key={range} className="rounded-full border border-[#d4e0da] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#52625c]"><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{background:`hsl(${155 + index*12} ${42-index*3}% ${36+index*6}%)`}}/>{range}</span>)}</div></div>
+    <div className="grid gap-4 lg:grid-cols-2"><article className="rounded-[22px] border border-[#dce4df] bg-white p-5"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e5f0ea] text-[#176b52]"><TrainFront size={18}/></span><div><h2 className="text-sm font-semibold">Proximidade às estações</h2><p className="text-[11px] text-[#7d8884]">Acessibilidade ao sistema metroviário</p></div></div><div className="mt-5"><EmptyState icon={BarChart3} title="Sem métricas calculadas" description="O gráfico será preenchido após o processamento dos pontos."/></div></article><article className="rounded-[22px] border border-[#dce4df] bg-white p-5"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e9edf5] text-[#356ca0]"><Route size={18}/></span><div><h2 className="text-sm font-semibold">Proximidade ao traçado</h2><p className="text-[11px] text-[#7d8884]">Proxy de exposição a ruído e vibração</p></div></div><div className="mt-5"><EmptyState icon={BarChart3} title="Sem métricas calculadas" description="A distribuição por faixas aparecerá após a importação das linhas."/></div></article></div>
+  </section>;
+}
