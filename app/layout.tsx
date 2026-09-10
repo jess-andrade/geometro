@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 export const metadata: Metadata = {
   title: 'GeoMetrô Salvador',
   description: 'Plataforma de apoio à pesquisa sobre mobilidade e economia urbana em Salvador.',
-  metadataBase: new URL('https://geometro-salvador.awake-guppy-6436.chatgpt.site'),
+  metadataBase: new URL('https://geometro-salvador.joniisgelato.chatgpt.site'),
   openGraph: {
     title: 'GeoMetrô Salvador',
     description: 'Mobilidade, território e economia urbana em uma plataforma de geointeligência.',
