@@ -1,4 +1,4 @@
-import { featureCollection, point } from '@turf/helpers';
+import { featureCollection, lineString, point } from '@turf/helpers';
 import { distance } from '@turf/distance';
 import { nearestPoint } from '@turf/nearest-point';
 import { pointToLineDistance } from '@turf/point-to-line-distance';
@@ -13,7 +13,13 @@ export function nearestStation(origin:Feature<Point>, stations:Feature<Point>[])
 
 export function nearestMetroLine(origin:Feature<Point>, lines:Feature<LineString | MultiLineString>[]) {
   if (!lines.length) return null;
-  const result = lines.map((line) => ({ line, distanceM:pointToLineDistance(origin, line, { units:'kilometers' }) * 1000 })).sort((a,b)=>a.distanceM-b.distanceM)[0];
+  const result = lines.map((line) => {
+    const segments = line.geometry.type === 'LineString'
+      ? [lineString(line.geometry.coordinates)]
+      : line.geometry.coordinates.map((coordinates) => lineString(coordinates));
+    const distanceM = Math.min(...segments.map((segment) => pointToLineDistance(origin, segment, { units:'kilometers' }) * 1000));
+    return { line, distanceM };
+  }).sort((a,b)=>a.distanceM-b.distanceM)[0];
   return { ...result, range:distanceRange(result.distanceM) };
 }
 
