@@ -1,0 +1,35 @@
+{
+  "title": "Estimações",
+  "subtitle": "Resultados econométricos sobre os efeitos espaciais do Metrô de Salvador.",
+  "author": "Víctor Oliveira Paglerani",
+  "report_date": "15/10/2026",
+  "period": "2011–2024",
+  "balanced_ceps": 10756,
+  "observations": 150584,
+  "spatial_horizon_m": 4000,
+  "radius_increment_m": 200,
+  "estimator": "Callaway & Sant’Anna (2021)",
+  "main_outcomes": [
+    "faar",
+    "area_construida",
+    "inscricoes",
+    "transacoes_itiv",
+    "valor_venal"
+  ],
+  "main_estimate_count": 200,
+  "line_estimate_count": 90,
+  "event_study_count": 22,
+  "notes": [
+    "Os coeficientes foram transcritos; nenhuma regressão foi reexecutada.",
+    "Os IC 95% dos relatórios principais foram derivados de ATT ± 1,96 × erro-padrão.",
+    "Valores-p ausentes permanecem nulos."
+  ],
+  "value_distribution": {
+    "median": 70732.31,
+    "p90": 391744.5,
+    "p99": 2954575,
+    "max_approx": 416000000,
+    "skewness": 69.08,
+    "kurtosis": 7301.98
+  }
+}

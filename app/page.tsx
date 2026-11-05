@@ -5,12 +5,14 @@ import { AnalysisPage } from '@/features/analysis/analysis-page';
 import { DataPage } from '@/features/data/data-page';
 import { MaterialsPage } from '@/features/materials/materials-page';
 import { MethodologyPage } from '@/features/methodology/methodology-page';
+import { EstimationsPage } from '@/features/estimations/estimations-page';
 import type { ComponentType } from 'react';
 
 const pages = {
   'visao-geral': OverviewPage,
   mapa: MapWorkspace,
   analises: AnalysisPage,
+  estimacoes: EstimationsPage,
   dados: DataPage,
   materiais: MaterialsPage,
   metodologia: MethodologyPage,

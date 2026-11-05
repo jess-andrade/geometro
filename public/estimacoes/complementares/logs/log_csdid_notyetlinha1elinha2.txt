@@ -1,0 +1,2175 @@
+--------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Estimação 2\log_diff_diff_lucas.txt
+  log type:  text
+ opened on:  28 Oct 2026, 21:57:14
+
+. 
+. * 2. CARGA DA BASE DE DADOS E MERGE ESPACIAL
+. use "$path\painel_cep_ano.dta", clear
+
+. merge m:1 cep using "$path\distancias_cep_estacao_proxima.dta", keep(match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                           246.027  
+    -----------------------------------------
+
+. 
+. * Filtros estruturais de consistência da amostra
+. keep if flag_outlier_terreno == 0
+(1.017 observations deleted)
+
+. keep if cep_balanceado == 1
+(77.878 observations deleted)
+
+. 
+. * Elimina o grupo de controle distante (> 2 km)
+. keep if distancia_metros <= 2000
+(75.922 observations deleted)
+
+. 
+. * Identificador numérico do CEP para clusterização dos erros-padrão
+. egen cep_id = group(cep)
+
+. 
+. * 3. TRANSFORMAÇÕES DE VARIÁVEIS DEPENDENTES E COORTES TEMPORAIS
+. gen razao_itiv_inscr = qtde_transacoes_itiv / qtde_inscricoes if qtde_inscricoes > 0
+
+. 
+. cap confirm variable ln_vv_medio
+
+. if _rc != 0 {
+.     gen ln_vv_medio = ln(vv_medio_inscricao) if vv_medio_inscricao > 0
+. }
+
+. else {
+.     replace ln_vv_medio = ln(vv_medio_inscricao) if missing(ln_vv_medio) & vv_medio_inscricao > 0
+(0 real changes made)
+. }
+
+. 
+. * 3.1 Definição da coorte (gvar_timing)
+. * Campo Grande recebe 0 (controle estático puro na janela do estudo)
+. * Águas Claras mantém 2023
+. gen gvar_timing = ano_estacao
+
+. 
+. cap confirm variable nome_estacao
+
+. if _rc == 0 {
+.     replace gvar_timing = 0 if lower(trim(nome_estacao)) == "campo grande"
+(0 real changes made)
+. }
+
+. replace gvar_timing = 0 if ano_estacao > 2024 | missing(ano_estacao)
+(0 real changes made)
+
+. 
+. display as result "=== AUDITORIA DE COORTES TEMPORAIS (ANO BASE 2014) ==="
+=== AUDITORIA DE COORTES TEMPORAIS (ANO BASE 2014) ===
+
+. tab gvar_timing if exercicio == 2014
+
+gvar_timing |      Freq.     Percent        Cum.
+------------+-----------------------------------
+       2014 |       1339       20,55       20,55
+       2015 |       2162       33,18       53,74
+       2016 |        209        3,21       56,95
+       2017 |       1908       29,29       86,23
+       2018 |         86        1,32       87,55
+       2023 |        811       12,45      100,00
+------------+-----------------------------------
+      Total |       6515      100,00
+
+. 
+. * 3.2 Identificação das Linhas Operacionais
+. capture confirm numeric variable linha
+
+. if _rc == 0 {
+.     gen byte is_linha1 = (linha == 1)
+.     gen byte is_linha2 = (linha == 2)
+. }
+
+. else {
+.     gen byte is_linha1 = (strpos(lower(linha), "1") > 0)
+.     gen byte is_linha2 = (strpos(lower(linha), "2") > 0)
+. }
+
+. 
+. xtset id_painel exercicio
+
+Panel variable: id_painel (strongly balanced)
+ Time variable: exercicio, 2011 to 2024
+         Delta: 1 unit
+
+. 
+. local lista_outcomes "ln_vv_medio qtde_inscricoes qtde_transacoes_itiv razao_itiv_inscr faar soma_area_construida"
+
+. local raios_diretos "400 600 800 1000 1200"
+
+. local cenarios "geral linha1 linha2"
+
+. 
+. *===============================================================================
+. * ETAPA 4: CONTAGEM DE CEPS DISTINTOS (TRATADOS VS. CONTROLE POR RAIO E CENÁRIO)
+. *===============================================================================
+. foreach c of local cenarios {
+  2. 
+.     if "`c'" == "geral" {
+  3.         local cond_amostra "1 == 1"
+  4.         local rotulo "Geral (Linha 1 + Linha 2)"
+  5.     }
+  6.     if "`c'" == "linha1" {
+  7.         local cond_amostra "is_linha1 == 1"
+  8.         local rotulo "Exclusivamente Linha 1"
+  9.     }
+ 10.     if "`c'" == "linha2" {
+ 11.         local cond_amostra "is_linha2 == 1 & exercicio >= 2014"
+ 12.         local rotulo "Exclusivamente Linha 2 (Pos-2014)"
+ 13.     }
+ 14. 
+.     display _newline(2) as result "================================================================================"
+ 15.     display as result " TABELA 1: QUANTIDADE DE CEPS DISTINTOS - CENÁRIO: `rotulo'"
+ 16.     display as result "================================================================================"
+ 17. 
+.     tempname diag_file
+ 18.     file open `diag_file' using "$path\ceps_distintos_`c'.csv", write replace
+ 19.     file write `diag_file' "Cenario;Raio;CEPs_Distintos_Tratados;CEPs_Distintos_Controle;Total_CEPs_Distintos;Total_Obs_Painel" _n
+ 20. 
+.     display as text "{hline 85}"
+ 21.     display as text "Raio       | CEPs Tratados (Únicos) | CEPs Controle (Únicos) | Total CEPs Únicos | Obs Painel (NxT)"
+ 22.     display as text "{hline 85}"
+ 23. 
+.     foreach r of local raios_diretos {
+ 24.         preserve
+ 25.             keep if `cond_amostra' & distancia_metros <= `r'
+ 26.             
+.             quietly count
+ 27.             local total_obs = r(N)
+ 28. 
+.             duplicates drop cep, force
+ 29. 
+.             quietly count if gvar_timing > 0
+ 30.             local n_trat_distintos = r(N)
+ 31. 
+.             quietly count if gvar_timing == 0
+ 32.             local n_ctrl_distintos = r(N)
+ 33. 
+.             local n_tot_distintos  = `n_trat_distintos' + `n_ctrl_distintos'
+ 34. 
+.             display as result %-10s "`r'm" " | " %-22.0f `n_trat_distintos' " | " %-22.0f `n_ctrl_distintos' " | " %-17.0f `n_tot_distinto
+> s' " | " %-10.0f `total_obs'
+ 35.             file write `diag_file' "`c';`r'm;`n_trat_distintos';`n_ctrl_distintos';`n_tot_distintos';`total_obs'" _n
+ 36.         restore
+ 37.     }
+ 38.     display as text "{hline 85}"
+ 39.     file close `diag_file'
+ 40. }
+
+
+================================================================================
+ TABELA 1: QUANTIDADE DE CEPS DISTINTOS - CENÁRIO: Geral (Linha 1 + Linha 2)
+================================================================================
+-------------------------------------------------------------------------------------
+Raio       | CEPs Tratados (Únicos) | CEPs Controle (Únicos) | Total CEPs Únicos | Obs Painel (NxT)
+-------------------------------------------------------------------------------------
+(85.736 observations deleted)
+
+Duplicates in terms of cep
+
+(5.083 observations deleted)
+400m       | 391                    | 0                      | 391               | 5474      
+(78.638 observations deleted)
+
+Duplicates in terms of cep
+
+(11.674 observations deleted)
+600m       | 898                    | 0                      | 898               | 12572     
+(68.586 observations deleted)
+
+Duplicates in terms of cep
+
+(21.008 observations deleted)
+800m       | 1616                   | 0                      | 1616              | 22624     
+(56.910 observations deleted)
+
+Duplicates in terms of cep
+
+(31.850 observations deleted)
+1000m      | 2450                   | 0                      | 2450              | 34300     
+(45.108 observations deleted)
+
+Duplicates in terms of cep
+
+(42.809 observations deleted)
+1200m      | 3293                   | 0                      | 3293              | 46102     
+-------------------------------------------------------------------------------------
+
+
+================================================================================
+ TABELA 1: QUANTIDADE DE CEPS DISTINTOS - CENÁRIO: Exclusivamente Linha 1
+================================================================================
+-------------------------------------------------------------------------------------
+Raio       | CEPs Tratados (Únicos) | CEPs Controle (Únicos) | Total CEPs Únicos | Obs Painel (NxT)
+-------------------------------------------------------------------------------------
+(87.304 observations deleted)
+
+Duplicates in terms of cep
+
+(3.627 observations deleted)
+400m       | 279                    | 0                      | 279               | 3906      
+(82.544 observations deleted)
+
+Duplicates in terms of cep
+
+(8.047 observations deleted)
+600m       | 619                    | 0                      | 619               | 8666      
+(75.180 observations deleted)
+
+Duplicates in terms of cep
+
+(14.885 observations deleted)
+800m       | 1145                   | 0                      | 1145              | 16030     
+(66.164 observations deleted)
+
+Duplicates in terms of cep
+
+(23.257 observations deleted)
+1000m      | 1789                   | 0                      | 1789              | 25046     
+(58.016 observations deleted)
+
+Duplicates in terms of cep
+
+(30.823 observations deleted)
+1200m      | 2371                   | 0                      | 2371              | 33194     
+-------------------------------------------------------------------------------------
+
+
+================================================================================
+ TABELA 1: QUANTIDADE DE CEPS DISTINTOS - CENÁRIO: Exclusivamente Linha 2 (Pos-2014)
+================================================================================
+-------------------------------------------------------------------------------------
+Raio       | CEPs Tratados (Únicos) | CEPs Controle (Únicos) | Total CEPs Únicos | Obs Painel (NxT)
+-------------------------------------------------------------------------------------
+(89.978 observations deleted)
+
+Duplicates in terms of cep
+
+(1.120 observations deleted)
+400m       | 112                    | 0                      | 112               | 1232      
+(88.141 observations deleted)
+
+Duplicates in terms of cep
+
+(2.790 observations deleted)
+600m       | 279                    | 0                      | 279               | 3069      
+(86.029 observations deleted)
+
+Duplicates in terms of cep
+
+(4.710 observations deleted)
+800m       | 471                    | 0                      | 471               | 5181      
+(83.939 observations deleted)
+
+Duplicates in terms of cep
+
+(6.610 observations deleted)
+1000m      | 661                    | 0                      | 661               | 7271      
+(81.068 observations deleted)
+
+Duplicates in terms of cep
+
+(9.220 observations deleted)
+1200m      | 922                    | 0                      | 922               | 10142     
+-------------------------------------------------------------------------------------
+
+. 
+. *===============================================================================
+. * ETAPA 5: ESTIMAÇÕES CSDID, COMPARAÇÃO DE ATTS COM ESTRELAS E GRÁFICOS
+. *===============================================================================
+. foreach c of local cenarios {
+  2. 
+.     if "`c'" == "geral" {
+  3.         local cond_amostra "1 == 1"
+  4.         local rotulo "Geral (Linha 1 + Linha 2)"
+  5.     }
+  6.     if "`c'" == "linha1" {
+  7.         local cond_amostra "is_linha1 == 1"
+  8.         local rotulo "Exclusivamente Linha 1"
+  9.     }
+ 10.     if "`c'" == "linha2" {
+ 11.         local cond_amostra "is_linha2 == 1 & exercicio >= 2014"
+ 12.         local rotulo "Exclusivamente Linha 2 (Pos-2014)"
+ 13.     }
+ 14. 
+.     tempname att_file
+ 15.     file open `att_file' using "$path\comparativo_atts_raios_`c'.csv", write replace
+ 16.     file write `att_file' "Cenario;Desfecho;Raio;ATT;Estrelas;ATT_Formatado;SE;t_stat;p_value" _n
+ 17. 
+.     display _newline(3) as result "##################################################################"
+ 18.     display as result " ESTIMAÇÕES DE IMPACTO (ATTs): `rotulo'"
+ 19.     display as result "##################################################################"
+ 20. 
+.     local idx = 0
+ 21.     foreach y of local lista_outcomes {
+ 22.         local ++idx
+ 23.         estimates clear
+ 24. 
+.         local mod_reg ""
+ 25.         local plot_reg ""
+ 26. 
+.         foreach r of local raios_diretos {
+ 27. 
+.             display _newline as text ">>> Estimando: `c' | Desfecho: `y' | Raio: <= `r'm <<<"
+ 28. 
+.             capture noisily {
+ 29.                 csdid `y' if `cond_amostra' & distancia_metros <= `r', ///
+>                     ivar(id_painel) time(exercicio) gvar(gvar_timing) ///
+>                     cluster(cep_id) method(reg) notyet agg(simple)
+ 30.                 
+.                 estimates store r_`c'_`idx'_`r'm
+ 31.                 local mod_reg "`mod_reg' r_`c'_`idx'_`r'm"
+ 32.                 local plot_reg "`plot_reg' (r_`c'_`idx'_`r'm, rename(ATT = `r'm))"
+ 33. 
+.                 * Extração dos coeficientes e cálculo das estatísticas
+.                 matrix b_mat = e(b)
+ 34.                 matrix v_mat = e(V)
+ 35.                 local b_att = b_mat[1, 1]
+ 36.                 local se_att = sqrt(v_mat[1, 1])
+ 37.                 local t_att = `b_att' / `se_att'
+ 38.                 local p_att = 2 * (1 - normal(abs(`t_att')))
+ 39. 
+.                 * Atribuição explícita das estrelas de significância estatística
+.                 local stars ""
+ 40.                 if `p_att' < 0.01 {
+ 41.                     local stars "***"
+ 42.                 }
+ 43.                 else if `p_att' < 0.05 {
+ 44.                     local stars "**"
+ 45.                 }
+ 46.                 else if `p_att' < 0.10 {
+ 47.                     local stars "*"
+ 48.                 }
+ 49. 
+.                 local att_formatado : display %9.4f `b_att' "`stars'"
+ 50. 
+.                 * Escrita no CSV com as estrelas e dados completos
+.                 file write `att_file' "`c';`y';`r'm;" %9.4f (`b_att') ";`stars';`att_formatado';" %9.4f (`se_att') ";" %9.2f (`t_att') ";"
+>  %9.4f (`p_att') _n
+ 51.             }
+ 52.         }
+ 53. 
+.         * Quadro de ATTs com estrelas impresso no Log e no Console (sem a opção se para evitar erro r(198))
+.         display _newline as result "--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): `rotulo' | `y' ---"
+ 54.         if "`mod_reg'" != "" {
+ 55.             estimates table `mod_reg', star(0.10 0.05 0.01) b(%12.4f)
+ 56.         }
+ 57. 
+.         * Gráfico ajustado: eixos horizontais, sem corte e com margem de respiro
+.         if "`plot_reg'" != "" {
+ 58.             capture noisily {
+ 59.                 coefplot `plot_reg', vertical drop(_cons) legend(off) ///
+>                     yline(0, lpattern(dash) lcolor(black)) ///
+>                     msymbol(circle) mcolor(navy) ciopts(lcolor(navy)) ///
+>                     ylabel(, angle(horizontal) format(%9.2f) labsize(small)) ///
+>                     ytitle("Efeito Médio (ATT)", size(small) margin(right)) ///
+>                     xtitle("Raio Delimitado em Relação à Estação", size(small) margin(top)) ///
+>                     xlabel(, labsize(small)) ///
+>                     title("Impacto por Raio (`rotulo'): `y'", size(small) span) ///
+>                     graphregion(color(white) margin(medium)) bgcolor(white) ///
+>                     name(gr_`c'_y`idx', replace)
+ 60.                 
+.                 graph export "$path\impacto_`c'_raios_`y'.png", as(png) width(1200) replace
+ 61.             }
+ 62.         }
+ 63.     }
+ 64.     file close `att_file'
+ 65. }
+
+
+
+##################################################################
+ ESTIMAÇÕES DE IMPACTO (ATTs): Geral (Linha 1 + Linha 2)
+##################################################################
+
+>>> Estimando: geral | Desfecho: ln_vv_medio | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,2152136   ,0499126     4,31   0,000     ,1173868    ,3130405
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: ln_vv_medio | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,1051588   ,0283364     3,71   0,000     ,0496206    ,1606971
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: ln_vv_medio | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0717783   ,0259099     2,77   0,006     ,0209957    ,1225608
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: ln_vv_medio | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |    ,017532    ,020126     0,87   0,384    -,0219143    ,0569784
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: ln_vv_medio | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0133389    ,016254     0,82   0,412    -,0185183     ,045196
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | ln_vv_medio ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_1_400m    r_geral_1_600m    r_geral_1_800m    r_geral_1_1000m   r_geral_1_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,2152***         0,1052***         0,0718***         0,0175            0,0133     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_ln_vv_medio.png not found)
+file C:\Estimação 2\impacto_geral_raios_ln_vv_medio.png saved as PNG format
+
+>>> Estimando: geral | Desfecho: qtde_inscricoes | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -5,937429   2,878673    -2,06   0,039    -11,57952   -,2953335
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_inscricoes | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -7,478438   4,521137    -1,65   0,098     -16,3397    1,382829
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_inscricoes | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -6,229476   4,087328    -1,52   0,127    -14,24049    1,781539
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_inscricoes | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -5,014521   2,712623    -1,85   0,065    -10,33116    ,3021233
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_inscricoes | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -3,690188   2,149392    -1,72   0,086    -7,902918    ,5225425
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | qtde_inscricoes ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_2_400m    r_geral_2_600m    r_geral_2_800m    r_geral_2_1000m   r_geral_2_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -5,9374**         -7,4784*          -6,2295           -5,0145*          -3,6902*    
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_qtde_inscricoes.png not found)
+file C:\Estimação 2\impacto_geral_raios_qtde_inscricoes.png saved as PNG format
+
+>>> Estimando: geral | Desfecho: qtde_transacoes_itiv | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   1,155237   1,354978     0,85   0,394    -1,500471    3,810944
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_transacoes_itiv | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |    1,10392   ,7569691     1,46   0,145    -,3797118    2,587552
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_transacoes_itiv | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0586961   ,6408543    -0,09   0,927    -1,314747    1,197355
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_transacoes_itiv | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,4242509   ,4436948    -0,96   0,339    -1,293877    ,4453749
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: qtde_transacoes_itiv | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,4591503   ,3672893    -1,25   0,211    -1,179024    ,2607234
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | qtde_transacoes_itiv ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_3_400m    r_geral_3_600m    r_geral_3_800m    r_geral_3_1000m   r_geral_3_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       1,1552            1,1039           -0,0587           -0,4243           -0,4592     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_qtde_transacoes_itiv.png not found)
+file C:\Estimação 2\impacto_geral_raios_qtde_transacoes_itiv.png saved as PNG format
+
+>>> Estimando: geral | Desfecho: razao_itiv_inscr | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0050303   ,0072816     0,69   0,490    -,0092414     ,019302
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: razao_itiv_inscr | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0021998   ,0033502     0,66   0,511    -,0043665     ,008766
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: razao_itiv_inscr | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0003486   ,0024448     0,14   0,887    -,0044431    ,0051403
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: razao_itiv_inscr | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0014348   ,0017907     0,80   0,423    -,0020748    ,0049445
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: razao_itiv_inscr | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0011453     ,00146     0,78   0,433    -,0017162    ,0040067
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | razao_itiv_inscr ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_4_400m    r_geral_4_600m    r_geral_4_800m    r_geral_4_1000m   r_geral_4_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,0050            0,0022            0,0003            0,0014            0,0011     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_razao_itiv_inscr.png not found)
+file C:\Estimação 2\impacto_geral_raios_razao_itiv_inscr.png saved as PNG format
+
+>>> Estimando: geral | Desfecho: faar | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0301478    ,023833     1,26   0,206     -,016564    ,0768596
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: faar | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0179917   ,0128349     1,40   0,161    -,0071643    ,0431478
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: faar | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0089563    ,011694     0,77   0,444    -,0139634    ,0318761
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: faar | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0023125   ,0079567    -0,29   0,771    -,0179073    ,0132823
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: faar | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0125946   ,0077323    -1,63   0,103    -,0277497    ,0025605
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | faar ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_5_400m    r_geral_5_600m    r_geral_5_800m    r_geral_5_1000m   r_geral_5_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,0301            0,0180            0,0090           -0,0023           -0,0126     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_faar.png not found)
+file C:\Estimação 2\impacto_geral_raios_faar.png saved as PNG format
+
+>>> Estimando: geral | Desfecho: soma_area_construida | Raio: <= 400m <<<
+...........xx...........xx...........xx...........
+xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 4.692
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 391 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -322,0927   585,3787    -0,55   0,582    -1469,414    825,2285
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: soma_area_construida | Raio: <= 600m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 10.776
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 898 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -757,7985   404,2535    -1,87   0,061    -1550,121    34,52376
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: soma_area_construida | Raio: <= 800m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 19.392
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.616 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -534,3667   305,5758    -1,75   0,080    -1133,284    64,55077
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: soma_area_construida | Raio: <= 1000m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 29.400
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.450 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -540,2982   244,9109    -2,21   0,027    -1020,315   -60,28171
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: geral | Desfecho: soma_area_construida | Raio: <= 1200m <<<
+...........xx...........xx...........xx...........
+xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 39.516
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 3.293 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -421,8318   191,3823    -2,20   0,028    -796,9342   -46,72937
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Geral (Linha 1 + Linha 2) | soma_area_construida ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_geral_6_400m    r_geral_6_600m    r_geral_6_800m    r_geral_6_1000m   r_geral_6_1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |    -322,0927         -757,7985*        -534,3667*        -540,2982**       -421,8318**   
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_geral_raios_soma_area_construida.png not found)
+file C:\Estimação 2\impacto_geral_raios_soma_area_construida.png saved as PNG format
+(file C:\Estimação 2\comparativo_atts_raios_linha1.csv not found)
+
+
+
+##################################################################
+ ESTIMAÇÕES DE IMPACTO (ATTs): Exclusivamente Linha 1
+##################################################################
+
+>>> Estimando: linha1 | Desfecho: ln_vv_medio | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,2899853    ,078759     3,68   0,000     ,1356205    ,4443501
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: ln_vv_medio | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,1620987   ,0455856     3,56   0,000     ,0727525    ,2514448
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: ln_vv_medio | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0992484   ,0379041     2,62   0,009     ,0249578    ,1735389
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: ln_vv_medio | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0254085   ,0270146     0,94   0,347    -,0275393    ,0783562
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: ln_vv_medio | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0234812   ,0220516     1,06   0,287    -,0197392    ,0667015
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | ln_vv_medio ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_1_400m   r_linha1_1_600m   r_linha1_1_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,2900***         0,1621***         0,0992***         0,0254            0,0235     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_ln_vv_medio.png not found)
+file C:\Estimação 2\impacto_linha1_raios_ln_vv_medio.png saved as PNG format
+
+>>> Estimando: linha1 | Desfecho: qtde_inscricoes | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -8,137427   3,785008    -2,15   0,032    -15,55591   -,7189465
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_inscricoes | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -9,923446    5,29785    -1,87   0,061    -20,30704    ,4601481
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_inscricoes | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -8,212169     4,2402    -1,94   0,053    -16,52281    ,0984708
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_inscricoes | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -6,396162    2,93757    -2,18   0,029    -12,15369   -,6386301
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_inscricoes | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -4,877629   2,332567    -2,09   0,037    -9,449376   -,3058818
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | qtde_inscricoes ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_2_400m   r_linha1_2_600m   r_linha1_2_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -8,1374**         -9,9234*          -8,2122*          -6,3962**         -4,8776**   
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_qtde_inscricoes.png not found)
+file C:\Estimação 2\impacto_linha1_raios_qtde_inscricoes.png saved as PNG format
+
+>>> Estimando: linha1 | Desfecho: qtde_transacoes_itiv | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,7849568   ,3806508    -2,06   0,039    -1,531019   -,0388949
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_transacoes_itiv | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,7908008   ,6851057    -1,15   0,248    -2,133583    ,5519817
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_transacoes_itiv | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -1,146421   ,5729826    -2,00   0,045    -2,269446    -,023396
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_transacoes_itiv | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -1,090195   ,4104032    -2,66   0,008    -1,894571   -,2858197
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: qtde_transacoes_itiv | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   -1,03517   ,3448986    -3,00   0,003    -1,711159    -,359181
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | qtde_transacoes_itiv ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_3_400m   r_linha1_3_600m   r_linha1_3_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -0,7850**         -0,7908           -1,1464**         -1,0902***        -1,0352***  
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_qtde_transacoes_itiv.png not found)
+file C:\Estimação 2\impacto_linha1_raios_qtde_transacoes_itiv.png saved as PNG format
+
+>>> Estimando: linha1 | Desfecho: razao_itiv_inscr | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0039082   ,0097233    -0,40   0,688    -,0229655    ,0151492
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: razao_itiv_inscr | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0032503   ,0043428    -0,75   0,454     -,011762    ,0052613
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: razao_itiv_inscr | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0020863   ,0029751    -0,70   0,483    -,0079174    ,0037447
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: razao_itiv_inscr | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0001162   ,0023431    -0,05   0,960    -,0047087    ,0044762
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: razao_itiv_inscr | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0001119   ,0019106     0,06   0,953    -,0036328    ,0038566
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | razao_itiv_inscr ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_4_400m   r_linha1_4_600m   r_linha1_4_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -0,0039           -0,0033           -0,0021           -0,0001            0,0001     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_razao_itiv_inscr.png not found)
+file C:\Estimação 2\impacto_linha1_raios_razao_itiv_inscr.png saved as PNG format
+
+>>> Estimando: linha1 | Desfecho: faar | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0375225   ,0357412     1,05   0,294     -,032529    ,1075739
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: faar | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0255444   ,0190852     1,34   0,181    -,0118618    ,0629506
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: faar | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0147721   ,0166662     0,89   0,375    -,0178929    ,0474372
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: faar | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0011625   ,0107014    -0,11   0,913    -,0221368    ,0198119
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: faar | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0154572    ,011176    -1,38   0,167    -,0373618    ,0064473
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | faar ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_5_400m   r_linha1_5_600m   r_linha1_5_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,0375            0,0255            0,0148           -0,0012           -0,0155     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_faar.png not found)
+file C:\Estimação 2\impacto_linha1_raios_faar.png saved as PNG format
+
+>>> Estimando: linha1 | Desfecho: soma_area_construida | Raio: <= 400m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.348
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -532,2627   751,3542    -0,71   0,479     -2004,89    940,3645
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: soma_area_construida | Raio: <= 600m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 7.428
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 619 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -1155,976   519,5848    -2,22   0,026    -2174,344   -137,6087
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: soma_area_construida | Raio: <= 800m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 13.740
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.145 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -869,4252    360,713    -2,41   0,016     -1576,41   -162,4407
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: soma_area_construida | Raio: <= 1000m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 21.468
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 1.789 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -685,4289   272,6387    -2,51   0,012    -1219,791   -151,0668
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha1 | Desfecho: soma_area_construida | Raio: <= 1200m <<<
+...........xx...........xxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                        Number of obs = 28.452
+Outcome model  : regression adjustment
+Treatment model: none
+                             (Std. err. adjusted for 2.371 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -544,9288   215,1237    -2,53   0,011    -966,5636    -123,294
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 1 | soma_area_construida ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha1_6_400m   r_linha1_6_600m   r_linha1_6_800m   r_linha1_~1000m   r_linha1_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |    -532,2627        -1155,9762**       -869,4252**       -685,4289**       -544,9288**   
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha1_raios_soma_area_construida.png not found)
+file C:\Estimação 2\impacto_linha1_raios_soma_area_construida.png saved as PNG format
+(file C:\Estimação 2\comparativo_atts_raios_linha2.csv not found)
+
+
+
+##################################################################
+ ESTIMAÇÕES DE IMPACTO (ATTs): Exclusivamente Linha 2 (Pos-2014)
+##################################################################
+
+>>> Estimando: linha2 | Desfecho: ln_vv_medio | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0122049   ,0113291    -1,08   0,281    -,0344095    ,0099997
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: ln_vv_medio | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0169039   ,0082077    -2,06   0,039    -,0329908    -,000817
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: ln_vv_medio | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0205961   ,0065465    -3,15   0,002     -,033427   -,0077652
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: ln_vv_medio | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0230666   ,0057756    -3,99   0,000    -,0343865   -,0117467
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: ln_vv_medio | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0139504   ,0063312    -2,20   0,028    -,0263593   -,0015415
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | ln_vv_medio ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_1_400m   r_linha2_1_600m   r_linha2_1_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -0,0122           -0,0169**         -0,0206***        -0,0231***        -0,0140**   
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_ln_vv_medio.png not found)
+file C:\Estimação 2\impacto_linha2_raios_ln_vv_medio.png saved as PNG format
+
+>>> Estimando: linha2 | Desfecho: qtde_inscricoes | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,3928571    ,335143     1,17   0,241     -,264011    1,049725
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_inscricoes | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,4794537   ,7074754    -0,68   0,498     -1,86608    ,9071726
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_inscricoes | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,9148325   ,6421366    -1,42   0,154    -2,173397    ,3437321
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_inscricoes | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,2777706   ,9423021    -0,29   0,768    -2,124649    1,569108
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_inscricoes | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |    -,18603   ,8310044    -0,22   0,823    -1,814769    1,442709
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | qtde_inscricoes ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_2_400m   r_linha2_2_600m   r_linha2_2_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,3929           -0,4795           -0,9148           -0,2778           -0,1860     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_qtde_inscricoes.png not found)
+file C:\Estimação 2\impacto_linha2_raios_qtde_inscricoes.png saved as PNG format
+
+>>> Estimando: linha2 | Desfecho: qtde_transacoes_itiv | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,3452381   1,003607     0,34   0,731    -1,621795    2,312271
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_transacoes_itiv | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,1973262   ,3208443     0,62   0,539     -,431517    ,8261694
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_transacoes_itiv | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0105583   ,2455214    -0,04   0,966    -,4917714    ,4706547
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_transacoes_itiv | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,2130704   ,3770968    -0,57   0,572    -,9521665    ,5260258
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: qtde_transacoes_itiv | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,3079005   ,3276527    -0,94   0,347    -,9500881     ,334287
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | qtde_transacoes_itiv ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_3_400m   r_linha2_3_600m   r_linha2_3_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,3452            0,1973           -0,0106           -0,2131           -0,3079     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_qtde_transacoes_itiv.png not found)
+file C:\Estimação 2\impacto_linha2_raios_qtde_transacoes_itiv.png saved as PNG format
+
+>>> Estimando: linha2 | Desfecho: razao_itiv_inscr | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0118378   ,0067138     1,76   0,078     -,001321    ,0249966
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: razao_itiv_inscr | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0009607   ,0014972    -0,64   0,521     -,003895    ,0019737
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: razao_itiv_inscr | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0025473   ,0013096    -1,95   0,052     -,005114    ,0000195
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: razao_itiv_inscr | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0019291   ,0011725    -1,65   0,100    -,0042272    ,0003691
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: razao_itiv_inscr | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0006013   ,0042761    -0,14   0,888    -,0089822    ,0077797
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | razao_itiv_inscr ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_4_400m   r_linha2_4_600m   r_linha2_4_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |       0,0118*          -0,0010           -0,0025*          -0,0019*          -0,0006     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_razao_itiv_inscr.png not found)
+file C:\Estimação 2\impacto_linha2_raios_razao_itiv_inscr.png saved as PNG format
+
+>>> Estimando: linha2 | Desfecho: faar | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |  -,0012914   ,0044871    -0,29   0,773    -,0100861    ,0075032
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: faar | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0122788     ,00492     2,50   0,013     ,0026359    ,0219218
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: faar | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0107038   ,0035788     2,99   0,003     ,0036895    ,0177181
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: faar | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0122021    ,002924     4,17   0,000     ,0064712     ,017933
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: faar | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   ,0008932   ,0062794     0,14   0,887    -,0114143    ,0132006
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | faar ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_5_400m   r_linha2_5_600m   r_linha2_5_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      -0,0013            0,0123**          0,0107***         0,0122***         0,0009     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_faar.png not found)
+file C:\Estimação 2\impacto_linha2_raios_faar.png saved as PNG format
+
+>>> Estimando: linha2 | Desfecho: soma_area_construida | Raio: <= 400m <<<
+..xxxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                           Number of obs = 336
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 112 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   47,79762   36,16444     1,32   0,186    -23,08338    118,6786
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: soma_area_construida | Raio: <= 600m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.116
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 279 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   4,911336   134,4173     0,04   0,971    -258,5417    268,3643
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: soma_area_construida | Raio: <= 800m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 1.884
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 471 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   10,80134   90,97427     0,12   0,905     -167,505    189,1076
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: soma_area_construida | Raio: <= 1000m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 2.644
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 661 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   111,8254   94,39733     1,18   0,236    -73,19002    296,8407
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+>>> Estimando: linha2 | Desfecho: soma_area_construida | Raio: <= 1200m <<<
+...xxxxxxx...xxxxxxxxxxxxxxxxx
+Difference-in-difference with Multiple Time Periods
+
+                                                         Number of obs = 3.688
+Outcome model  : regression adjustment
+Treatment model: none
+                               (Std. err. adjusted for 922 clusters in cep_id)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         ATT |   106,1064   75,22174     1,41   0,158    -41,32546    253,5383
+------------------------------------------------------------------------------
+Control: Not yet Treated
+
+See Callaway and Sant'Anna (2021) for details
+
+--- QUADRO COMPARATIVO DE ATTS ENTRE RAIOS (COM ESTRELAS): Exclusivamente Linha 2 (Pos-2014) | soma_area_construida ---
+
+--------------------------------------------------------------------------------------------------------
+    Variable | r_linha2_6_400m   r_linha2_6_600m   r_linha2_6_800m   r_linha2_~1000m   r_linha2_~1200m  
+-------------+------------------------------------------------------------------------------------------
+         ATT |      47,7976            4,9113           10,8013          111,8254          106,1064     
+--------------------------------------------------------------------------------------------------------
+                                                                     Legend: * p<.1; ** p<.05; *** p<.01
+(file C:\Estimação 2\impacto_linha2_raios_soma_area_construida.png not found)
+file C:\Estimação 2\impacto_linha2_raios_soma_area_construida.png saved as PNG format
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Estimação 2\log_diff_diff_lucas.txt
+  log type:  text
+ closed on:  28 Oct 2026, 22:16:36
+--------------------------------------------------------------------------------------------------------------------------------------------

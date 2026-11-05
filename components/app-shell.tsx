@@ -1,13 +1,14 @@
 'use client';
 
-import { BarChart3, BookOpenText, Database, FileStack, LayoutDashboard, Map, Menu, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
+import { BarChart3, BookOpenText, Calculator, Database, FileStack, LayoutDashboard, Map, Menu, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-export type Section = 'visao-geral' | 'mapa' | 'analises' | 'dados' | 'materiais' | 'metodologia';
+export type Section = 'visao-geral' | 'mapa' | 'analises' | 'estimacoes' | 'dados' | 'materiais' | 'metodologia';
 const items: Array<{ id: Section; label: string; icon: typeof Map }> = [
   { id:'visao-geral', label:'Visão Geral', icon:LayoutDashboard },
   { id:'mapa', label:'Mapa', icon:Map },
   { id:'analises', label:'Análises', icon:BarChart3 },
+  { id:'estimacoes', label:'Estimações', icon:Calculator },
   { id:'dados', label:'Dados', icon:Database },
   { id:'materiais', label:'Materiais', icon:FileStack },
   { id:'metodologia', label:'Metodologia', icon:BookOpenText },
@@ -16,7 +17,7 @@ const items: Array<{ id: Section; label: string; icon: typeof Map }> = [
 export function AppShell({ active, children }: { active: Section; children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeLabel = items.find((item) => item.id === active)?.label ?? 'Visão Geral';
-  const hrefFor = (id: Section) => id === 'visao-geral' ? '/' : `/?secao=${id}`;
+  const hrefFor = (id: Section) => id === 'visao-geral' ? '/' : id === 'estimacoes' ? '/estimacoes' : `/?secao=${id}`;
   return (
     <div className="min-h-screen bg-[#f5f7f4] lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
       <aside className={`${mobileOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 flex w-[252px] flex-col border-r border-[#dde4df] bg-[#fbfcfa] px-4 py-5 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0`}>

@@ -44,7 +44,7 @@ export type StudyMapPoint = {
   distance_line_range_code: string | null;
   distance_line_range: string | null;
   closest_point: Point;
-  method_version: 'provisional-track-v1';
+  method_version: 'shapefile-track-v1';
 };
 
 export type StudySummary = {
@@ -57,7 +57,7 @@ export type StudySummary = {
   min_line_distance_m: number;
   median_line_distance_m: number;
   max_line_distance_m: number;
-  method_version: 'provisional-track-v1';
+  method_version: 'shapefile-track-v1';
   provisional_track: boolean;
 };
 
@@ -85,6 +85,13 @@ export type DescriptiveStats = {
 export type HistogramBin = {metric:'station'|'track';bin_width_m:number;bin_start_m:number;bin_end_m:number;n:number;total_n:number;percentage:number};
 export type EcdfPoint = {metric:'station'|'track';threshold_m:number;cumulative_n:number;total_n:number;cumulative_percentage:number};
 export type ScatterPoint = {point_id:string;distance_line_m:number;distance_station_m:number;nearest_line_id:string;sample_order:number;population_n:number};
+export type TrackSensitivity = {
+  point_count:number;mean_delta_m:number;median_delta_m:number;mean_absolute_delta_m:number;
+  changed_distance_range_count:number;changed_nearest_line_count:number;
+  changed_within_100m_count:number;changed_within_200m_count:number;changed_within_300m_count:number;
+  previous_method_version:string;current_method_version:string;
+};
+export type TrackSensitivityPoint = {point_id:string;provisional_distance_m:number;shapefile_distance_m:number;delta_m:number};
 export type GroupComparison = {dimension:'line'|'locality'|'geocoding_quality';group_value:string;n:number;mean_station_m:number;median_station_m:number;mean_line_m:number;median_line_m:number};
 export type GeocodingQualitySummary = {dimension:'stage'|'result_type'|'precisao3'|'status';group_value:string;n:number};
 export type QuarantinedStudyPoint = {

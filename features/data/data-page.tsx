@@ -21,7 +21,7 @@ const rangeGuidance:Record<string,string>={
 const columns:Array<{label:string;sort?:StudyPointSort;help?:string}>=[
   {label:'CEP',sort:'cep'},{label:'Logradouro',sort:'street'},{label:'Localidade',sort:'locality'},{label:'Coordenadas',help:'Longitude/latitude originais representadas na aplicação em SRID 4326.'},
   {label:'Etapa',help:'Etapa de georreferenciamento registrada na fonte.'},{label:'Precisão',help:'precisao3 quando disponível; caso contrário, tipo_resultado do geocodebr.'},
-  {label:'Estação mais próxima'},{label:'Dist. estação',sort:'distance_station_m',help:'Distância original da matriz; método utm_source_file.'},{label:'Linha mais próxima'},{label:'Dist. linha',sort:'distance_line_m',help:'Distância PostGIS ao traçado provisório.'},{label:'Faixa'},{label:'Qualidade',help:'Status da validação espacial da base principal.'},{label:'Ação'},
+  {label:'Estação mais próxima'},{label:'Dist. estação',sort:'distance_station_m',help:'Distância original da matriz; método utm_source_file.'},{label:'Linha mais próxima'},{label:'Dist. linha',sort:'distance_line_m',help:'Distância PostGIS ao traçado ferroviário real do OpenStreetMap.'},{label:'Faixa'},{label:'Qualidade',help:'Status da validação espacial da base principal.'},{label:'Ação'},
 ];
 
 export function DataPage(){

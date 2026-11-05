@@ -1,0 +1,3130 @@
+{
+  "results": [
+    {
+      "outcome": "qtde_inscricoes",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.36,
+          "std_error": 0.633216,
+          "p_value": 0.57,
+          "ci_low": -0.8810805,
+          "ci_high": 1.601081
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 18.10136,
+          "std_error": 17.89157,
+          "p_value": 0.312,
+          "ci_low": -16.96549,
+          "ci_high": 53.1682
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -2.157365,
+          "std_error": 3.522854,
+          "p_value": 0.54,
+          "ci_low": -9.062031,
+          "ci_high": 4.747301
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -2.904812,
+          "std_error": 4.318314,
+          "p_value": 0.501,
+          "ci_low": -11.36855,
+          "ci_high": 5.558929
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -4.486184,
+          "std_error": 3.603305,
+          "p_value": 0.213,
+          "ci_low": -11.54853,
+          "ci_high": 2.576164
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -6.521977,
+          "std_error": 2.511115,
+          "p_value": 0.009,
+          "ci_low": -11.44367,
+          "ci_high": -1.600281
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -7.933884,
+          "std_error": 3.08793,
+          "p_value": 0.01,
+          "ci_low": -13.98612,
+          "ci_high": -1.881653
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -6.977614,
+          "std_error": 3.090539,
+          "p_value": 0.024,
+          "ci_low": -13.03496,
+          "ci_high": -0.9202677
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -5.610601,
+          "std_error": 2.5813,
+          "p_value": 0.03,
+          "ci_low": -10.66986,
+          "ci_high": -0.5513469
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -3.682404,
+          "std_error": 2.89461,
+          "p_value": 0.203,
+          "ci_low": -9.355736,
+          "ci_high": 1.990927
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -3.304262,
+          "std_error": 2.916058,
+          "p_value": 0.257,
+          "ci_low": -9.019631,
+          "ci_high": 2.411107
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -3.671631,
+          "std_error": 3.997361,
+          "p_value": 0.358,
+          "ci_low": -11.50631,
+          "ci_high": 4.163052
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -6.086142,
+          "std_error": 4.056669,
+          "p_value": 0.134,
+          "ci_low": -14.03707,
+          "ci_high": 1.864783
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -13.88725,
+          "std_error": 6.140122,
+          "p_value": 0.024,
+          "ci_low": -25.92167,
+          "ci_high": -1.85283
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_qtde_inscricoes.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "qtde_inscricoes",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": -0.2857143,
+          "std_error": 0.2051807,
+          "p_value": 0.164,
+          "ci_low": -0.6878611,
+          "ci_high": 0.1164325
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.4995366,
+          "std_error": 0.3341583,
+          "p_value": 0.135,
+          "ci_low": -0.1554017,
+          "ci_high": 1.154475
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 8.155601,
+          "std_error": 7.240465,
+          "p_value": 0.26,
+          "ci_low": -6.035451,
+          "ci_high": 22.34665
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -1.730824,
+          "std_error": 2.422391,
+          "p_value": 0.475,
+          "ci_low": -6.478624,
+          "ci_high": 3.016975
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.5586787,
+          "std_error": 1.998068,
+          "p_value": 0.78,
+          "ci_low": -4.47482,
+          "ci_high": 3.357463
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -2.827785,
+          "std_error": 1.993748,
+          "p_value": 0.156,
+          "ci_low": -6.735459,
+          "ci_high": 1.079889
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -3.256657,
+          "std_error": 1.61766,
+          "p_value": 0.044,
+          "ci_low": -6.427214,
+          "ci_high": -0.0861012
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -5.236852,
+          "std_error": 2.283585,
+          "p_value": 0.022,
+          "ci_low": -9.712596,
+          "ci_high": -0.7611076
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -5.777031,
+          "std_error": 3.788331,
+          "p_value": 0.127,
+          "ci_low": -13.20202,
+          "ci_high": 1.647962
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -6.775406,
+          "std_error": 4.941867,
+          "p_value": 0.17,
+          "ci_low": -16.46129,
+          "ci_high": 2.910476
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -7.126863,
+          "std_error": 5.400344,
+          "p_value": 0.187,
+          "ci_low": -17.71134,
+          "ci_high": 3.457615
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -7.35393,
+          "std_error": 5.579428,
+          "p_value": 0.187,
+          "ci_low": -18.28941,
+          "ci_high": 3.581547
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -9.7489,
+          "std_error": 7.041572,
+          "p_value": 0.166,
+          "ci_low": -23.55013,
+          "ci_high": 4.052327
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -12.90546,
+          "std_error": 7.905668,
+          "p_value": 0.103,
+          "ci_low": -28.40029,
+          "ci_high": 2.58936
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -19.50819,
+          "std_error": 8.484647,
+          "p_value": 0.021,
+          "ci_low": -36.1378,
+          "ci_high": -2.878589
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_qtde_inscricoes.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "qtde_inscricoes",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": -0.2230216,
+          "std_error": 0.1865081,
+          "p_value": 0.232,
+          "ci_low": -0.5885708,
+          "ci_high": 0.1425276
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 1.722521,
+          "std_error": 1.117226,
+          "p_value": 0.123,
+          "ci_low": -0.4672013,
+          "ci_high": 3.912243
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 5.165526,
+          "std_error": 4.326374,
+          "p_value": 0.232,
+          "ci_low": -3.314012,
+          "ci_high": 13.64506
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -2.06189,
+          "std_error": 1.55045,
+          "p_value": 0.184,
+          "ci_low": -5.100716,
+          "ci_high": 0.9769368
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.4813283,
+          "std_error": 1.235422,
+          "p_value": 0.697,
+          "ci_low": -2.902711,
+          "ci_high": 1.940054
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.3885626,
+          "std_error": 1.326599,
+          "p_value": 0.77,
+          "ci_low": -2.98865,
+          "ci_high": 2.211525
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -2.258286,
+          "std_error": 1.564623,
+          "p_value": 0.149,
+          "ci_low": -5.324891,
+          "ci_high": 0.8083196
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -2.789006,
+          "std_error": 2.019643,
+          "p_value": 0.167,
+          "ci_low": -6.747433,
+          "ci_high": 1.169422
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -2.35189,
+          "std_error": 3.733884,
+          "p_value": 0.529,
+          "ci_low": -9.670167,
+          "ci_high": 4.966387
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -2.450608,
+          "std_error": 5.354132,
+          "p_value": 0.647,
+          "ci_low": -12.94451,
+          "ci_high": 8.043298
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -5.218799,
+          "std_error": 5.137392,
+          "p_value": 0.31,
+          "ci_low": -15.2879,
+          "ci_high": 4.850304
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -7.723558,
+          "std_error": 5.997532,
+          "p_value": 0.198,
+          "ci_low": -19.4785,
+          "ci_high": 4.031389
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -11.0795,
+          "std_error": 6.449298,
+          "p_value": 0.086,
+          "ci_low": -23.71989,
+          "ci_high": 1.560896
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -15.0268,
+          "std_error": 6.324513,
+          "p_value": 0.018,
+          "ci_low": -27.42262,
+          "ci_high": -2.630986
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -21.33826,
+          "std_error": 6.94189,
+          "p_value": 0.002,
+          "ci_low": -34.94412,
+          "ci_high": -7.732408
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_qtde_inscricoes.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "qtde_transacoes_itiv",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -6.312857,
+          "std_error": 3.618711,
+          "p_value": 0.081,
+          "ci_low": -13.4054,
+          "ci_high": 0.7796861
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 10.74445,
+          "std_error": 11.69131,
+          "p_value": 0.358,
+          "ci_low": -12.17009,
+          "ci_high": 33.659
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -4.061302,
+          "std_error": 6.033515,
+          "p_value": 0.501,
+          "ci_low": -15.88677,
+          "ci_high": 7.76417
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -1.939402,
+          "std_error": 2.97571,
+          "p_value": 0.515,
+          "ci_low": -7.771686,
+          "ci_high": 3.892882
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.5011323,
+          "std_error": 0.5311474,
+          "p_value": 0.345,
+          "ci_low": -0.5398976,
+          "ci_high": 1.542162
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 2.163968,
+          "std_error": 2.127561,
+          "p_value": 0.309,
+          "ci_low": -2.005974,
+          "ci_high": 6.333911
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 4.86106,
+          "std_error": 4.307781,
+          "p_value": 0.259,
+          "ci_low": -3.582035,
+          "ci_high": 13.30416
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 4.663598,
+          "std_error": 4.2965,
+          "p_value": 0.278,
+          "ci_low": -3.757388,
+          "ci_high": 13.08458
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -0.5334426,
+          "std_error": 0.3200161,
+          "p_value": 0.096,
+          "ci_low": -1.160663,
+          "ci_high": 0.0937774
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.3555191,
+          "std_error": 0.8804531,
+          "p_value": 0.686,
+          "ci_low": -1.370137,
+          "ci_high": 2.081176
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -0.809071,
+          "std_error": 0.3749329,
+          "p_value": 0.031,
+          "ci_low": -1.543926,
+          "ci_high": -0.0742161
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -0.8388652,
+          "std_error": 0.3584666,
+          "p_value": 0.019,
+          "ci_low": -1.541447,
+          "ci_high": -0.1362836
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -0.6650394,
+          "std_error": 0.3411903,
+          "p_value": 0.051,
+          "ci_low": -1.33376,
+          "ci_high": 0.0036813
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -1.228725,
+          "std_error": 0.5879796,
+          "p_value": 0.037,
+          "ci_low": -2.381144,
+          "ci_high": -0.0763059
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_qtde_transacoes_itiv.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "qtde_transacoes_itiv",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0285714,
+          "std_error": 0.072763,
+          "p_value": 0.695,
+          "ci_low": -0.1140415,
+          "ci_high": 0.1711844
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -3.636419,
+          "std_error": 1.738942,
+          "p_value": 0.037,
+          "ci_low": -7.044683,
+          "ci_high": -0.2281555
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 5.273247,
+          "std_error": 4.799094,
+          "p_value": 0.272,
+          "ci_low": -4.132804,
+          "ci_high": 14.6793
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -2.594616,
+          "std_error": 2.506051,
+          "p_value": 0.301,
+          "ci_low": -7.506387,
+          "ci_high": 2.317154
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.8342731,
+          "std_error": 1.361717,
+          "p_value": 0.54,
+          "ci_low": -3.503189,
+          "ci_high": 1.834643
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.3342274,
+          "std_error": 0.9066954,
+          "p_value": 0.712,
+          "ci_low": -2.111318,
+          "ci_high": 1.442863
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 1.786711,
+          "std_error": 1.030157,
+          "p_value": 0.083,
+          "ci_low": -0.2323596,
+          "ci_high": 3.805782
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 2.938399,
+          "std_error": 1.644138,
+          "p_value": 0.074,
+          "ci_low": -0.2840534,
+          "ci_high": 6.160851
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 2.672741,
+          "std_error": 1.579429,
+          "p_value": 0.091,
+          "ci_low": -0.422882,
+          "ci_high": 5.768365
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.5016578,
+          "std_error": 0.8045555,
+          "p_value": 0.533,
+          "ci_low": -1.075242,
+          "ci_high": 2.078557
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 1.067478,
+          "std_error": 0.9667717,
+          "p_value": 0.27,
+          "ci_low": -0.8273601,
+          "ci_high": 2.962315
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.5736742,
+          "std_error": 0.8552704,
+          "p_value": 0.502,
+          "ci_low": -1.102625,
+          "ci_high": 2.249973
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -0.3765918,
+          "std_error": 0.5664283,
+          "p_value": 0.506,
+          "ci_low": -1.486771,
+          "ci_high": 0.7335873
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -0.3305491,
+          "std_error": 0.5877604,
+          "p_value": 0.574,
+          "ci_low": -1.482538,
+          "ci_high": 0.8214401
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -1.458525,
+          "std_error": 0.4835412,
+          "p_value": 0.003,
+          "ci_low": -2.406249,
+          "ci_high": -0.510802
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_qtde_transacoes_itiv.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "qtde_transacoes_itiv",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.1942446,
+          "std_error": 0.1702097,
+          "p_value": 0.254,
+          "ci_low": -0.1393603,
+          "ci_high": 0.5278495
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -1.518797,
+          "std_error": 1.343057,
+          "p_value": 0.258,
+          "ci_low": -4.15114,
+          "ci_high": 1.113547
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 3.493146,
+          "std_error": 2.90359,
+          "p_value": 0.229,
+          "ci_low": -2.197786,
+          "ci_high": 9.184078
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -1.828991,
+          "std_error": 1.436086,
+          "p_value": 0.203,
+          "ci_low": -4.643668,
+          "ci_high": 0.9856862
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.8650314,
+          "std_error": 0.9182167,
+          "p_value": 0.346,
+          "ci_low": -2.664703,
+          "ci_high": 0.9346402
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.0179099,
+          "std_error": 0.519397,
+          "p_value": 0.972,
+          "ci_low": -1.00009,
+          "ci_high": 1.035909
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 1.073794,
+          "std_error": 0.5845571,
+          "p_value": 0.066,
+          "ci_low": -0.0719169,
+          "ci_high": 2.219505
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 1.987682,
+          "std_error": 0.9920986,
+          "p_value": 0.045,
+          "ci_low": 0.0432047,
+          "ci_high": 3.93216
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.6841294,
+          "std_error": 1.181093,
+          "p_value": 0.562,
+          "ci_low": -1.63077,
+          "ci_high": 2.999028
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -0.3836988,
+          "std_error": 0.5688041,
+          "p_value": 0.5,
+          "ci_low": -1.498534,
+          "ci_high": 0.7311367
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -1.103924,
+          "std_error": 1.212299,
+          "p_value": 0.363,
+          "ci_low": -3.479987,
+          "ci_high": 1.272138
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -1.595626,
+          "std_error": 1.303357,
+          "p_value": 0.221,
+          "ci_low": -4.150158,
+          "ci_high": 0.9589065
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -0.6675147,
+          "std_error": 0.4918252,
+          "p_value": 0.175,
+          "ci_low": -1.631474,
+          "ci_high": 0.2964449
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -0.3617075,
+          "std_error": 0.331919,
+          "p_value": 0.276,
+          "ci_low": -1.012257,
+          "ci_high": 0.2888418
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -1.137695,
+          "std_error": 0.3237111,
+          "p_value": 0,
+          "ci_low": -1.772157,
+          "ci_high": -0.5032331
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_qtde_transacoes_itiv.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "razao_itiv_inscr",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -0.0092187,
+          "std_error": 0.0085261,
+          "p_value": 0.28,
+          "ci_low": -0.0259296,
+          "ci_high": 0.0074921
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -0.0110676,
+          "std_error": 0.0146427,
+          "p_value": 0.45,
+          "ci_low": -0.0397668,
+          "ci_high": 0.0176316
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.0114206,
+          "std_error": 0.0078312,
+          "p_value": 0.145,
+          "ci_low": -0.0039283,
+          "ci_high": 0.0267695
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0038709,
+          "std_error": 0.0062184,
+          "p_value": 0.534,
+          "ci_low": -0.0160588,
+          "ci_high": 0.0083169
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.0100195,
+          "std_error": 0.0082998,
+          "p_value": 0.227,
+          "ci_low": -0.0262867,
+          "ci_high": 0.0062478
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0076248,
+          "std_error": 0.007289,
+          "p_value": 0.296,
+          "ci_low": -0.0066613,
+          "ci_high": 0.0219109
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0052521,
+          "std_error": 0.006664,
+          "p_value": 0.431,
+          "ci_low": -0.0078091,
+          "ci_high": 0.0183132
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0061031,
+          "std_error": 0.0062407,
+          "p_value": 0.328,
+          "ci_low": -0.0061285,
+          "ci_high": 0.0183346
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0052586,
+          "std_error": 0.0090715,
+          "p_value": 0.562,
+          "ci_low": -0.0125213,
+          "ci_high": 0.0230385
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.0098874,
+          "std_error": 0.0094234,
+          "p_value": 0.294,
+          "ci_low": -0.0085822,
+          "ci_high": 0.028357
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.0094263,
+          "std_error": 0.0099721,
+          "p_value": 0.345,
+          "ci_low": -0.0101187,
+          "ci_high": 0.0289713
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -0.00412,
+          "std_error": 0.0086896,
+          "p_value": 0.635,
+          "ci_low": -0.0211514,
+          "ci_high": 0.0129113
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -0.0001489,
+          "std_error": 0.0097061,
+          "p_value": 0.988,
+          "ci_low": -0.0191725,
+          "ci_high": 0.0188748
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -0.0016659,
+          "std_error": 0.0154234,
+          "p_value": 0.914,
+          "ci_low": -0.0318953,
+          "ci_high": 0.0285635
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_razao_itiv_inscr.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "razao_itiv_inscr",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0034387,
+          "std_error": 0.0036776,
+          "p_value": 0.35,
+          "ci_low": -0.0037693,
+          "ci_high": 0.0106467
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.0020337,
+          "std_error": 0.0060647,
+          "p_value": 0.737,
+          "ci_low": -0.0098529,
+          "ci_high": 0.0139203
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -0.0131244,
+          "std_error": 0.0070182,
+          "p_value": 0.061,
+          "ci_low": -0.0268798,
+          "ci_high": 0.000631
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.0054889,
+          "std_error": 0.0046697,
+          "p_value": 0.24,
+          "ci_low": -0.0036636,
+          "ci_high": 0.0146414
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0016541,
+          "std_error": 0.0042654,
+          "p_value": 0.698,
+          "ci_low": -0.0100143,
+          "ci_high": 0.006706
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.0072237,
+          "std_error": 0.0042368,
+          "p_value": 0.088,
+          "ci_low": -0.0155277,
+          "ci_high": 0.0010802
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0035966,
+          "std_error": 0.003232,
+          "p_value": 0.266,
+          "ci_low": -0.002738,
+          "ci_high": 0.0099311
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0045613,
+          "std_error": 0.0033966,
+          "p_value": 0.179,
+          "ci_low": -0.0020958,
+          "ci_high": 0.0112184
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0025506,
+          "std_error": 0.0033624,
+          "p_value": 0.448,
+          "ci_low": -0.0040395,
+          "ci_high": 0.0091408
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0007455,
+          "std_error": 0.0040684,
+          "p_value": 0.855,
+          "ci_low": -0.0072284,
+          "ci_high": 0.0087194
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.0046963,
+          "std_error": 0.0043163,
+          "p_value": 0.277,
+          "ci_low": -0.0037636,
+          "ci_high": 0.0131561
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.0038824,
+          "std_error": 0.0044764,
+          "p_value": 0.386,
+          "ci_low": -0.0048912,
+          "ci_high": 0.012656
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -0.0009736,
+          "std_error": 0.0040219,
+          "p_value": 0.809,
+          "ci_low": -0.0088565,
+          "ci_high": 0.0069092
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -0.0007971,
+          "std_error": 0.0044665,
+          "p_value": 0.858,
+          "ci_low": -0.0095512,
+          "ci_high": 0.0079571
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -0.0051608,
+          "std_error": 0.0067962,
+          "p_value": 0.448,
+          "ci_low": -0.0184811,
+          "ci_high": 0.0081595
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_razao_itiv_inscr.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "razao_itiv_inscr",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0050877,
+          "std_error": 0.0030001,
+          "p_value": 0.09,
+          "ci_low": -0.0007923,
+          "ci_high": 0.0109677
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.0014013,
+          "std_error": 0.0059635,
+          "p_value": 0.814,
+          "ci_low": -0.0102869,
+          "ci_high": 0.0130895
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -0.0083258,
+          "std_error": 0.0053127,
+          "p_value": 0.117,
+          "ci_low": -0.0187386,
+          "ci_high": 0.002087
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.003362,
+          "std_error": 0.0034055,
+          "p_value": 0.324,
+          "ci_low": -0.0033127,
+          "ci_high": 0.0100368
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": 0.0001435,
+          "std_error": 0.0029063,
+          "p_value": 0.961,
+          "ci_low": -0.0055528,
+          "ci_high": 0.0058398
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.0055448,
+          "std_error": 0.0026127,
+          "p_value": 0.034,
+          "ci_low": -0.0106656,
+          "ci_high": -0.000424
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0026523,
+          "std_error": 0.0019015,
+          "p_value": 0.163,
+          "ci_low": -0.0010746,
+          "ci_high": 0.0063792
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0042833,
+          "std_error": 0.0021771,
+          "p_value": 0.049,
+          "ci_low": 0.0000163,
+          "ci_high": 0.0085503
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0001606,
+          "std_error": 0.0031492,
+          "p_value": 0.959,
+          "ci_low": -0.0060117,
+          "ci_high": 0.0063329
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -0.0008566,
+          "std_error": 0.0027007,
+          "p_value": 0.751,
+          "ci_low": -0.0061499,
+          "ci_high": 0.0044367
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -0.0015969,
+          "std_error": 0.004157,
+          "p_value": 0.701,
+          "ci_low": -0.0097444,
+          "ci_high": 0.0065507
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -0.0014455,
+          "std_error": 0.004127,
+          "p_value": 0.726,
+          "ci_low": -0.0095342,
+          "ci_high": 0.0066433
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.0002917,
+          "std_error": 0.0026911,
+          "p_value": 0.914,
+          "ci_low": -0.0049827,
+          "ci_high": 0.0055661
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.0006643,
+          "std_error": 0.0028044,
+          "p_value": 0.813,
+          "ci_low": -0.0048323,
+          "ci_high": 0.0061608
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -0.003532,
+          "std_error": 0.0038131,
+          "p_value": 0.354,
+          "ci_low": -0.0110056,
+          "ci_high": 0.0039416
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_razao_itiv_inscr.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "ln_vv_medio",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.1393268,
+          "std_error": 0.0508573,
+          "p_value": 0.006,
+          "ci_low": 0.0396483,
+          "ci_high": 0.2390052
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -0.0303309,
+          "std_error": 0.042758,
+          "p_value": 0.478,
+          "ci_low": -0.1141351,
+          "ci_high": 0.0534733
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.2310257,
+          "std_error": 0.0627236,
+          "p_value": 0,
+          "ci_low": 0.1080897,
+          "ci_high": 0.3539617
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0396519,
+          "std_error": 0.0298358,
+          "p_value": 0.184,
+          "ci_low": -0.098129,
+          "ci_high": 0.0188252
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.0411726,
+          "std_error": 0.0259763,
+          "p_value": 0.113,
+          "ci_low": -0.00974,
+          "ci_high": 0.0920851
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0159248,
+          "std_error": 0.0259245,
+          "p_value": 0.539,
+          "ci_low": -0.0348862,
+          "ci_high": 0.0667357
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0672671,
+          "std_error": 0.0360328,
+          "p_value": 0.062,
+          "ci_low": -0.0033558,
+          "ci_high": 0.13789
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0359197,
+          "std_error": 0.034409,
+          "p_value": 0.297,
+          "ci_low": -0.0315206,
+          "ci_high": 0.1033601
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.2113043,
+          "std_error": 0.0554762,
+          "p_value": 0,
+          "ci_low": 0.1025729,
+          "ci_high": 0.3200356
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.2872721,
+          "std_error": 0.0581367,
+          "p_value": 0,
+          "ci_low": 0.1733264,
+          "ci_high": 0.4012179
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.3014321,
+          "std_error": 0.0687148,
+          "p_value": 0,
+          "ci_low": 0.1667535,
+          "ci_high": 0.4361108
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.338501,
+          "std_error": 0.078035,
+          "p_value": 0,
+          "ci_low": 0.1855553,
+          "ci_high": 0.4914467
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.3583687,
+          "std_error": 0.0856138,
+          "p_value": 0,
+          "ci_low": 0.1905686,
+          "ci_high": 0.5261687
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.6520106,
+          "std_error": 0.1370146,
+          "p_value": 0,
+          "ci_low": 0.3834669,
+          "ci_high": 0.9205543
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_ln_vv_medio.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "ln_vv_medio",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0267076,
+          "std_error": 0.0164672,
+          "p_value": 0.105,
+          "ci_low": -0.0055675,
+          "ci_high": 0.0589826
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.0520041,
+          "std_error": 0.025569,
+          "p_value": 0.042,
+          "ci_low": 0.0018899,
+          "ci_high": 0.1021184
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 0.0058988,
+          "std_error": 0.0219589,
+          "p_value": 0.788,
+          "ci_low": -0.0371398,
+          "ci_high": 0.0489374
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.1412908,
+          "std_error": 0.0387324,
+          "p_value": 0,
+          "ci_low": 0.0653766,
+          "ci_high": 0.217205
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0160682,
+          "std_error": 0.0153027,
+          "p_value": 0.294,
+          "ci_low": -0.046061,
+          "ci_high": 0.0139245
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.0214693,
+          "std_error": 0.0184979,
+          "p_value": 0.246,
+          "ci_low": -0.014786,
+          "ci_high": 0.0577246
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -0.007474,
+          "std_error": 0.0151526,
+          "p_value": 0.622,
+          "ci_low": -0.0371726,
+          "ci_high": 0.0222245
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.008339,
+          "std_error": 0.019555,
+          "p_value": 0.67,
+          "ci_low": -0.0299882,
+          "ci_high": 0.0466661
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -0.0043483,
+          "std_error": 0.0198631,
+          "p_value": 0.827,
+          "ci_low": -0.0432793,
+          "ci_high": 0.0345827
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0963865,
+          "std_error": 0.0323426,
+          "p_value": 0.003,
+          "ci_low": 0.0329961,
+          "ci_high": 0.1597769
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.1442737,
+          "std_error": 0.0326211,
+          "p_value": 0,
+          "ci_low": 0.0803375,
+          "ci_high": 0.2082098
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.1573464,
+          "std_error": 0.0351005,
+          "p_value": 0,
+          "ci_low": 0.0885507,
+          "ci_high": 0.226142
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.1928939,
+          "std_error": 0.0424829,
+          "p_value": 0,
+          "ci_low": 0.109629,
+          "ci_high": 0.2761588
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.2072827,
+          "std_error": 0.0467207,
+          "p_value": 0,
+          "ci_low": 0.1157118,
+          "ci_high": 0.2988535
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.412032,
+          "std_error": 0.0903187,
+          "p_value": 0,
+          "ci_low": 0.2350106,
+          "ci_high": 0.5890535
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_ln_vv_medio.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "ln_vv_medio",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0152463,
+          "std_error": 0.0093588,
+          "p_value": 0.103,
+          "ci_low": -0.0030966,
+          "ci_high": 0.0335892
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.043408,
+          "std_error": 0.0167189,
+          "p_value": 0.009,
+          "ci_low": 0.0106396,
+          "ci_high": 0.0761764
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 0.0015398,
+          "std_error": 0.0158996,
+          "p_value": 0.923,
+          "ci_low": -0.0296229,
+          "ci_high": 0.0327025
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.0847261,
+          "std_error": 0.0294974,
+          "p_value": 0.004,
+          "ci_low": 0.0269123,
+          "ci_high": 0.14254
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.017713,
+          "std_error": 0.0111151,
+          "p_value": 0.111,
+          "ci_low": -0.0394982,
+          "ci_high": 0.0040722
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.0020998,
+          "std_error": 0.0143125,
+          "p_value": 0.883,
+          "ci_low": -0.0301518,
+          "ci_high": 0.0259522
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0003598,
+          "std_error": 0.0110954,
+          "p_value": 0.974,
+          "ci_low": -0.0213867,
+          "ci_high": 0.0221064
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0058328,
+          "std_error": 0.0145199,
+          "p_value": 0.688,
+          "ci_low": -0.0226258,
+          "ci_high": 0.0342913
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -0.0060236,
+          "std_error": 0.017802,
+          "p_value": 0.735,
+          "ci_low": -0.0409148,
+          "ci_high": 0.0288677
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0566334,
+          "std_error": 0.0282701,
+          "p_value": 0.045,
+          "ci_low": 0.0012249,
+          "ci_high": 0.1120419
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.1006679,
+          "std_error": 0.0316628,
+          "p_value": 0.001,
+          "ci_low": 0.0386099,
+          "ci_high": 0.1627259
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.115616,
+          "std_error": 0.0345033,
+          "p_value": 0.001,
+          "ci_low": 0.0479907,
+          "ci_high": 0.1832413
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.1312707,
+          "std_error": 0.0406848,
+          "p_value": 0.001,
+          "ci_low": 0.0515299,
+          "ci_high": 0.2110115
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.1365638,
+          "std_error": 0.0433692,
+          "p_value": 0.002,
+          "ci_low": 0.0515617,
+          "ci_high": 0.2215659
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.2815898,
+          "std_error": 0.0740189,
+          "p_value": 0,
+          "ci_low": 0.1365154,
+          "ci_high": 0.4266641
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_ln_vv_medio.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "vv_medio_inscricao",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 135402,
+          "std_error": 71189.82,
+          "p_value": 0.057,
+          "ci_low": -4127.538,
+          "ci_high": 274931.4
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -42624.47,
+          "std_error": 65347.95,
+          "p_value": 0.514,
+          "ci_low": -170704.1,
+          "ci_high": 85455.16
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 265899.8,
+          "std_error": 129328.3,
+          "p_value": 0.04,
+          "ci_low": 12420.92,
+          "ci_high": 519378.7
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": 130223.9,
+          "std_error": 344482,
+          "p_value": 0.705,
+          "ci_low": -544948.5,
+          "ci_high": 805396.3
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -290673.5,
+          "std_error": 236805,
+          "p_value": 0.22,
+          "ci_low": -754802.7,
+          "ci_high": 173455.7
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -141354.4,
+          "std_error": 226991.3,
+          "p_value": 0.533,
+          "ci_low": -586249.1,
+          "ci_high": 303540.3
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -270162.3,
+          "std_error": 370111,
+          "p_value": 0.465,
+          "ci_low": -995566.4,
+          "ci_high": 455241.9
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 329616.6,
+          "std_error": 570137.3,
+          "p_value": 0.563,
+          "ci_low": -787832.1,
+          "ci_high": 1447065
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 597285.4,
+          "std_error": 597436.3,
+          "p_value": 0.317,
+          "ci_low": -573668.3,
+          "ci_high": 1768239
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 527616,
+          "std_error": 355359.7,
+          "p_value": 0.138,
+          "ci_low": -168876.2,
+          "ci_high": 1224108
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 608804.9,
+          "std_error": 385654.9,
+          "p_value": 0.114,
+          "ci_low": -147064.9,
+          "ci_high": 1364675
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 1003223,
+          "std_error": 644093.7,
+          "p_value": 0.119,
+          "ci_low": -259177.4,
+          "ci_high": 2265624
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 559122.6,
+          "std_error": 551954.7,
+          "p_value": 0.311,
+          "ci_low": -522688.7,
+          "ci_high": 1640934
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 1135121,
+          "std_error": 1034515,
+          "p_value": 0.273,
+          "ci_low": -892491.7,
+          "ci_high": 3162734
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_vv_medio_inscricao.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "vv_medio_inscricao",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 13226.51,
+          "std_error": 17724.38,
+          "p_value": 0.456,
+          "ci_low": -21512.64,
+          "ci_high": 47965.65
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -50983.99,
+          "std_error": 107288.7,
+          "p_value": 0.635,
+          "ci_low": -261266,
+          "ci_high": 159298
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -1139.942,
+          "std_error": 32842.4,
+          "p_value": 0.972,
+          "ci_low": -65509.86,
+          "ci_high": 63229.97
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 110628.2,
+          "std_error": 62776.86,
+          "p_value": 0.078,
+          "ci_low": -12412.18,
+          "ci_high": 233668.6
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": 79139.1,
+          "std_error": 152443.8,
+          "p_value": 0.604,
+          "ci_low": -219645.2,
+          "ci_high": 377923.4
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -142619.2,
+          "std_error": 106108.4,
+          "p_value": 0.179,
+          "ci_low": -350587.8,
+          "ci_high": 65349.45
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -44465.75,
+          "std_error": 82858.58,
+          "p_value": 0.592,
+          "ci_low": -206865.6,
+          "ci_high": 117934.1
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -91708.88,
+          "std_error": 124865.2,
+          "p_value": 0.463,
+          "ci_low": -336440.2,
+          "ci_high": 153022.5
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 132059.4,
+          "std_error": 251179.9,
+          "p_value": 0.599,
+          "ci_low": -360244.2,
+          "ci_high": 624363
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 226123.9,
+          "std_error": 265458.8,
+          "p_value": 0.394,
+          "ci_low": -294165.8,
+          "ci_high": 746413.6
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 168496.9,
+          "std_error": 162788.7,
+          "p_value": 0.301,
+          "ci_low": -150563.1,
+          "ci_high": 487557
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 186805.6,
+          "std_error": 181257.9,
+          "p_value": 0.303,
+          "ci_low": -168453.4,
+          "ci_high": 542064.7
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 384573.3,
+          "std_error": 300354.9,
+          "p_value": 0.2,
+          "ci_low": -204111.4,
+          "ci_high": 973258.1
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 173399.9,
+          "std_error": 263407.4,
+          "p_value": 0.51,
+          "ci_low": -342869.1,
+          "ci_high": 689668.9
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 468381.1,
+          "std_error": 564636.3,
+          "p_value": 0.407,
+          "ci_low": -638285.7,
+          "ci_high": 1575048
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_vv_medio_inscricao.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "vv_medio_inscricao",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 3104.794,
+          "std_error": 9056.05,
+          "p_value": 0.732,
+          "ci_low": -14644.74,
+          "ci_high": 20854.33
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -28048.07,
+          "std_error": 60496.68,
+          "p_value": 0.643,
+          "ci_low": -146619.4,
+          "ci_high": 90523.25
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 4350.636,
+          "std_error": 18186.39,
+          "p_value": 0.811,
+          "ci_low": -31294.02,
+          "ci_high": 39995.3
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 84997.77,
+          "std_error": 43136.33,
+          "p_value": 0.049,
+          "ci_low": 452.119,
+          "ci_high": 169543.4
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": 44371.63,
+          "std_error": 85286.35,
+          "p_value": 0.603,
+          "ci_low": -122786.5,
+          "ci_high": 211529.8
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -110825.8,
+          "std_error": 67306.08,
+          "p_value": 0.1,
+          "ci_low": -242743.3,
+          "ci_high": 21091.69
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -47322.95,
+          "std_error": 47448.87,
+          "p_value": 0.319,
+          "ci_low": -140321,
+          "ci_high": 45675.12
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -104925,
+          "std_error": 74223.15,
+          "p_value": 0.157,
+          "ci_low": -250399.7,
+          "ci_high": 40549.72
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 26278.4,
+          "std_error": 143675.2,
+          "p_value": 0.855,
+          "ci_low": -255319.9,
+          "ci_high": 307876.7
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 110112.8,
+          "std_error": 150933.4,
+          "p_value": 0.466,
+          "ci_low": -185711.2,
+          "ci_high": 405936.8
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 99112.66,
+          "std_error": 94481.7,
+          "p_value": 0.294,
+          "ci_low": -86068.06,
+          "ci_high": 284293.4
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 127112.5,
+          "std_error": 104978,
+          "p_value": 0.226,
+          "ci_low": -78640.7,
+          "ci_high": 332865.6
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 205658.5,
+          "std_error": 170648.5,
+          "p_value": 0.228,
+          "ci_low": -128806.3,
+          "ci_high": 540123.4
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 78653.94,
+          "std_error": 146871.3,
+          "p_value": 0.592,
+          "ci_low": -209208.6,
+          "ci_high": 366516.4
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 253343.8,
+          "std_error": 325687.6,
+          "p_value": 0.437,
+          "ci_low": -384992.3,
+          "ci_high": 891679.8
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_vv_medio_inscricao.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "faar",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.1098771,
+          "std_error": 0.070837,
+          "p_value": 0.121,
+          "ci_low": -0.0289609,
+          "ci_high": 0.248715
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": -0.0073411,
+          "std_error": 0.0101244,
+          "p_value": 0.468,
+          "ci_low": -0.0271846,
+          "ci_high": 0.0125023
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -0.0184777,
+          "std_error": 0.0309344,
+          "p_value": 0.55,
+          "ci_low": -0.0791081,
+          "ci_high": 0.0421526
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0017375,
+          "std_error": 0.0091657,
+          "p_value": 0.85,
+          "ci_low": -0.019702,
+          "ci_high": 0.016227
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.0146313,
+          "std_error": 0.0131417,
+          "p_value": 0.266,
+          "ci_low": -0.0111259,
+          "ci_high": 0.0403886
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.024152,
+          "std_error": 0.0123193,
+          "p_value": 0.05,
+          "ci_low": 0.00000664,
+          "ci_high": 0.0482974
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0277906,
+          "std_error": 0.0149177,
+          "p_value": 0.062,
+          "ci_low": -0.0014475,
+          "ci_high": 0.0570287
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0303262,
+          "std_error": 0.0166546,
+          "p_value": 0.069,
+          "ci_low": -0.0023163,
+          "ci_high": 0.0629686
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0259953,
+          "std_error": 0.0266595,
+          "p_value": 0.33,
+          "ci_low": -0.0262563,
+          "ci_high": 0.0782469
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.0276701,
+          "std_error": 0.0276387,
+          "p_value": 0.317,
+          "ci_low": -0.0265008,
+          "ci_high": 0.081841
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.0260258,
+          "std_error": 0.0302592,
+          "p_value": 0.39,
+          "ci_low": -0.0332812,
+          "ci_high": 0.0853328
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.0362664,
+          "std_error": 0.0367425,
+          "p_value": 0.324,
+          "ci_low": -0.0357475,
+          "ci_high": 0.1082803
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.0406986,
+          "std_error": 0.0400148,
+          "p_value": 0.309,
+          "ci_low": -0.0377289,
+          "ci_high": 0.1191261
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.0470728,
+          "std_error": 0.0617889,
+          "p_value": 0.446,
+          "ci_low": -0.0740312,
+          "ci_high": 0.1681768
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_faar.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "faar",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0235439,
+          "std_error": 0.024001,
+          "p_value": 0.327,
+          "ci_low": -0.0234972,
+          "ci_high": 0.0705851
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.0278186,
+          "std_error": 0.0271335,
+          "p_value": 0.305,
+          "ci_low": -0.0253621,
+          "ci_high": 0.0809992
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 0.000752,
+          "std_error": 0.0057883,
+          "p_value": 0.897,
+          "ci_low": -0.0105928,
+          "ci_high": 0.0120969
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.0050608,
+          "std_error": 0.015893,
+          "p_value": 0.75,
+          "ci_low": -0.0260888,
+          "ci_high": 0.0362105
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0029984,
+          "std_error": 0.0058116,
+          "p_value": 0.606,
+          "ci_low": -0.014389,
+          "ci_high": 0.0083922
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 0.0005306,
+          "std_error": 0.0087041,
+          "p_value": 0.951,
+          "ci_low": -0.0165291,
+          "ci_high": 0.0175904
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0102416,
+          "std_error": 0.0070544,
+          "p_value": 0.147,
+          "ci_low": -0.0035848,
+          "ci_high": 0.024068
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.0121542,
+          "std_error": 0.0087721,
+          "p_value": 0.166,
+          "ci_low": -0.0050389,
+          "ci_high": 0.0293472
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0115922,
+          "std_error": 0.0103232,
+          "p_value": 0.261,
+          "ci_low": -0.0086409,
+          "ci_high": 0.0318253
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0155741,
+          "std_error": 0.0152341,
+          "p_value": 0.307,
+          "ci_low": -0.0142842,
+          "ci_high": 0.0454323
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.0175706,
+          "std_error": 0.0149246,
+          "p_value": 0.239,
+          "ci_low": -0.0116811,
+          "ci_high": 0.0468222
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.0189851,
+          "std_error": 0.0153465,
+          "p_value": 0.216,
+          "ci_low": -0.0110936,
+          "ci_high": 0.0490637
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.0286293,
+          "std_error": 0.0188228,
+          "p_value": 0.128,
+          "ci_low": -0.0082627,
+          "ci_high": 0.0655214
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.032856,
+          "std_error": 0.0200709,
+          "p_value": 0.102,
+          "ci_low": -0.0064823,
+          "ci_high": 0.0721943
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.0300157,
+          "std_error": 0.0355169,
+          "p_value": 0.398,
+          "ci_low": -0.0395962,
+          "ci_high": 0.0996275
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_faar.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "faar",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 0.0146497,
+          "std_error": 0.0128033,
+          "p_value": 0.253,
+          "ci_low": -0.0104443,
+          "ci_high": 0.0397437
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 0.0211467,
+          "std_error": 0.0149362,
+          "p_value": 0.157,
+          "ci_low": -0.0081277,
+          "ci_high": 0.0504211
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 0.0058772,
+          "std_error": 0.0045339,
+          "p_value": 0.195,
+          "ci_low": -0.0030091,
+          "ci_high": 0.0147635
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 0.0034633,
+          "std_error": 0.0132233,
+          "p_value": 0.793,
+          "ci_low": -0.022454,
+          "ci_high": 0.0293806
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -0.0016326,
+          "std_error": 0.0043468,
+          "p_value": 0.707,
+          "ci_low": -0.0101521,
+          "ci_high": 0.0068869
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -0.0020444,
+          "std_error": 0.0066677,
+          "p_value": 0.759,
+          "ci_low": -0.0151129,
+          "ci_high": 0.0110241
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": 0.0037355,
+          "std_error": 0.0052521,
+          "p_value": 0.477,
+          "ci_low": -0.0065584,
+          "ci_high": 0.0140294
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": 0.005871,
+          "std_error": 0.0066684,
+          "p_value": 0.379,
+          "ci_low": -0.007199,
+          "ci_high": 0.0189409
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": 0.0045052,
+          "std_error": 0.0084159,
+          "p_value": 0.592,
+          "ci_low": -0.0119897,
+          "ci_high": 0.021
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 0.0082476,
+          "std_error": 0.0136221,
+          "p_value": 0.545,
+          "ci_low": -0.0184512,
+          "ci_high": 0.0349465
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 0.0106707,
+          "std_error": 0.0143127,
+          "p_value": 0.456,
+          "ci_low": -0.0173817,
+          "ci_high": 0.0387231
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 0.007363,
+          "std_error": 0.0147587,
+          "p_value": 0.618,
+          "ci_low": -0.0215635,
+          "ci_high": 0.0362895
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 0.0155747,
+          "std_error": 0.0176066,
+          "p_value": 0.376,
+          "ci_low": -0.0189336,
+          "ci_high": 0.050083
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": 0.0187359,
+          "std_error": 0.0183585,
+          "p_value": 0.307,
+          "ci_low": -0.0172461,
+          "ci_high": 0.0547179
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 0.0142762,
+          "std_error": 0.0324144,
+          "p_value": 0.66,
+          "ci_low": -0.0492549,
+          "ci_high": 0.0778074
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_faar.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "soma_area_construida",
+      "radius_m": 400,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 49.16667,
+          "std_error": 263.5772,
+          "p_value": 0.852,
+          "ci_low": -467.4351,
+          "ci_high": 565.7685
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 1612.919,
+          "std_error": 1340.705,
+          "p_value": 0.229,
+          "ci_low": -1014.815,
+          "ci_high": 4240.653
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -291.6816,
+          "std_error": 504.1572,
+          "p_value": 0.563,
+          "ci_low": -1279.812,
+          "ci_high": 696.4483
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -232.0062,
+          "std_error": 359.4454,
+          "p_value": 0.519,
+          "ci_low": -936.5063,
+          "ci_high": 472.4939
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -556.2423,
+          "std_error": 362.0831,
+          "p_value": 0.124,
+          "ci_low": -1265.912,
+          "ci_high": 153.4275
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -814.5758,
+          "std_error": 451.0761,
+          "p_value": 0.071,
+          "ci_low": -1698.669,
+          "ci_high": 69.51704
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -876.4891,
+          "std_error": 550.6121,
+          "p_value": 0.111,
+          "ci_low": -1955.669,
+          "ci_high": 202.6908
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -305.7723,
+          "std_error": 683.7588,
+          "p_value": 0.655,
+          "ci_low": -1645.915,
+          "ci_high": 1034.37
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -198.5786,
+          "std_error": 560.1464,
+          "p_value": 0.723,
+          "ci_low": -1296.445,
+          "ci_high": 899.2882
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": 118.5752,
+          "std_error": 600.3424,
+          "p_value": 0.843,
+          "ci_low": -1058.074,
+          "ci_high": 1295.225
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 119.1255,
+          "std_error": 600.5114,
+          "p_value": 0.843,
+          "ci_low": -1057.855,
+          "ci_high": 1296.106
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -39.50649,
+          "std_error": 759.6188,
+          "p_value": 0.959,
+          "ci_low": -1528.332,
+          "ci_high": 1449.319
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -353.6732,
+          "std_error": 829.4767,
+          "p_value": 0.67,
+          "ci_low": -1979.418,
+          "ci_high": 1272.071
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -741.2851,
+          "std_error": 1399.616,
+          "p_value": 0.596,
+          "ci_low": -3484.483,
+          "ci_high": 2001.913
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_400m_notyet_reg_soma_area_construida.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "soma_area_construida",
+      "radius_m": 600,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": -52.91429,
+          "std_error": 33.27136,
+          "p_value": 0.112,
+          "ci_low": -118.125,
+          "ci_high": 12.29639
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 49.60396,
+          "std_error": 105.182,
+          "p_value": 0.637,
+          "ci_low": -156.549,
+          "ci_high": 255.7569
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 703.7564,
+          "std_error": 546.4114,
+          "p_value": 0.198,
+          "ci_low": -367.1903,
+          "ci_high": 1774.703
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -481.7275,
+          "std_error": 419.941,
+          "p_value": 0.251,
+          "ci_low": -1304.797,
+          "ci_high": 341.3417
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -62.06119,
+          "std_error": 169.7863,
+          "p_value": 0.715,
+          "ci_low": -394.8361,
+          "ci_high": 270.7138
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -159.1378,
+          "std_error": 281.27,
+          "p_value": 0.572,
+          "ci_low": -710.417,
+          "ci_high": 392.1413
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -480.2776,
+          "std_error": 233.2199,
+          "p_value": 0.039,
+          "ci_low": -937.3802,
+          "ci_high": -23.17508
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -649.7141,
+          "std_error": 300.8456,
+          "p_value": 0.031,
+          "ci_low": -1239.361,
+          "ci_high": -60.06762
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -478.7043,
+          "std_error": 400.1077,
+          "p_value": 0.232,
+          "ci_low": -1262.901,
+          "ci_high": 305.4924
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -715.3581,
+          "std_error": 421.6682,
+          "p_value": 0.09,
+          "ci_low": -1541.813,
+          "ci_high": 111.0963
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -773.0756,
+          "std_error": 482.8804,
+          "p_value": 0.109,
+          "ci_low": -1719.504,
+          "ci_high": 173.3526
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -552.7291,
+          "std_error": 482.5304,
+          "p_value": 0.252,
+          "ci_low": -1498.471,
+          "ci_high": 393.0131
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -848.0428,
+          "std_error": 570.7909,
+          "p_value": 0.137,
+          "ci_low": -1966.772,
+          "ci_high": 270.6867
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -1304.382,
+          "std_error": 647.1664,
+          "p_value": 0.044,
+          "ci_low": -2572.805,
+          "ci_high": -35.95933
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -2143.819,
+          "std_error": 1056.444,
+          "p_value": 0.042,
+          "ci_low": -4214.412,
+          "ci_high": -73.22678
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_600m_notyet_reg_soma_area_construida.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "soma_area_construida",
+      "radius_m": 800,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": -54.19424,
+          "std_error": 27.75826,
+          "p_value": 0.051,
+          "ci_low": -108.5994,
+          "ci_high": 0.2109371
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": 130.4538,
+          "std_error": 143.5355,
+          "p_value": 0.363,
+          "ci_low": -150.8705,
+          "ci_high": 411.7781
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 401.4943,
+          "std_error": 329.0528,
+          "p_value": 0.222,
+          "ci_low": -243.4374,
+          "ci_high": 1046.426
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": -328.9358,
+          "std_error": 238.1679,
+          "p_value": 0.167,
+          "ci_low": -795.7364,
+          "ci_high": 137.8648
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": -51.80709,
+          "std_error": 101.9808,
+          "p_value": 0.611,
+          "ci_low": -251.6859,
+          "ci_high": 148.0717
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": 42.69798,
+          "std_error": 174.0981,
+          "p_value": 0.806,
+          "ci_low": -298.5281,
+          "ci_high": 383.924
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -372.3837,
+          "std_error": 170.7724,
+          "p_value": 0.029,
+          "ci_low": -707.0914,
+          "ci_high": -37.67601
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -413.0455,
+          "std_error": 208.3063,
+          "p_value": 0.047,
+          "ci_low": -821.3184,
+          "ci_high": -4.772545
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -151.5122,
+          "std_error": 289.6624,
+          "p_value": 0.601,
+          "ci_low": -719.2401,
+          "ci_high": 416.2157
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": -270.4225,
+          "std_error": 310.0507,
+          "p_value": 0.383,
+          "ci_low": -878.1107,
+          "ci_high": 337.2656
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -395.8821,
+          "std_error": 362.6395,
+          "p_value": 0.275,
+          "ci_low": -1106.642,
+          "ci_high": 314.8782
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": -506.4182,
+          "std_error": 395.2988,
+          "p_value": 0.2,
+          "ci_low": -1281.19,
+          "ci_high": 268.3533
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": -854.1767,
+          "std_error": 480.5767,
+          "p_value": 0.076,
+          "ci_low": -1796.09,
+          "ci_high": 87.73636
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -1162.333,
+          "std_error": 508.5365,
+          "p_value": 0.022,
+          "ci_low": -2159.046,
+          "ci_high": -165.6197
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": -1840.385,
+          "std_error": 791.3448,
+          "p_value": 0.02,
+          "ci_low": -3391.392,
+          "ci_high": -289.3777
+        },
+        {
+          "relative_year": -6,
+          "term": "Tm6",
+          "att": 13171.45,
+          "std_error": 13989.46,
+          "p_value": 0.346,
+          "ci_low": -14247.39,
+          "ci_high": 40590.29
+        },
+        {
+          "relative_year": -5,
+          "term": "Tm5",
+          "att": -14225.95,
+          "std_error": 42756.63,
+          "p_value": 0.739,
+          "ci_low": -98027.41,
+          "ci_high": 69575.5
+        },
+        {
+          "relative_year": -4,
+          "term": "Tm4",
+          "att": 7117.789,
+          "std_error": 13021.89,
+          "p_value": 0.585,
+          "ci_low": -18404.64,
+          "ci_high": 32640.22
+        },
+        {
+          "relative_year": -3,
+          "term": "Tm3",
+          "att": 48888.12,
+          "std_error": 35041.59,
+          "p_value": 0.163,
+          "ci_low": -19792.14,
+          "ci_high": 117568.4
+        },
+        {
+          "relative_year": -2,
+          "term": "Tm2",
+          "att": 21402.92,
+          "std_error": 57015.33,
+          "p_value": 0.707,
+          "ci_low": -90345.07,
+          "ci_high": 133150.9
+        },
+        {
+          "relative_year": -1,
+          "term": "Tm1",
+          "att": -120803,
+          "std_error": 53858.05,
+          "p_value": 0.025,
+          "ci_low": -226362.8,
+          "ci_high": -15243.16
+        },
+        {
+          "relative_year": 0,
+          "term": "Tp0",
+          "att": -42942.89,
+          "std_error": 31511.4,
+          "p_value": 0.173,
+          "ci_low": -104704.1,
+          "ci_high": 18818.31
+        },
+        {
+          "relative_year": 1,
+          "term": "Tp1",
+          "att": -119741.2,
+          "std_error": 51870.87,
+          "p_value": 0.021,
+          "ci_low": -221406.2,
+          "ci_high": -18076.15
+        },
+        {
+          "relative_year": 2,
+          "term": "Tp2",
+          "att": -39714.15,
+          "std_error": 97388.52,
+          "p_value": 0.683,
+          "ci_low": -230592.1,
+          "ci_high": 151163.8
+        },
+        {
+          "relative_year": 3,
+          "term": "Tp3",
+          "att": 4928.425,
+          "std_error": 103196.4,
+          "p_value": 0.962,
+          "ci_low": -197332.7,
+          "ci_high": 207189.6
+        },
+        {
+          "relative_year": 4,
+          "term": "Tp4",
+          "att": -2257.214,
+          "std_error": 68843.52,
+          "p_value": 0.974,
+          "ci_low": -137188,
+          "ci_high": 132673.6
+        },
+        {
+          "relative_year": 5,
+          "term": "Tp5",
+          "att": 21206.89,
+          "std_error": 76345.36,
+          "p_value": 0.781,
+          "ci_low": -128427.3,
+          "ci_high": 170841.1
+        },
+        {
+          "relative_year": 6,
+          "term": "Tp6",
+          "att": 61486.23,
+          "std_error": 119195.1,
+          "p_value": 0.606,
+          "ci_low": -172131.8,
+          "ci_high": 295104.3
+        },
+        {
+          "relative_year": 7,
+          "term": "Tp7",
+          "att": -29427.98,
+          "std_error": 112634.7,
+          "p_value": 0.794,
+          "ci_low": -250188,
+          "ci_high": 191332
+        },
+        {
+          "relative_year": 8,
+          "term": "Tp8",
+          "att": 64159.46,
+          "std_error": 243919.5,
+          "p_value": 0.793,
+          "ci_low": -413914.1,
+          "ci_high": 542233
+        }
+      ],
+      "image": "/estimacoes/complementares/event-studies/event_800m_notyet_reg_soma_area_construida.png",
+      "source_file": "log_complemento_incondicional_400_600_800.txt"
+    },
+    {
+      "outcome": "vv_medio_inscricao",
+      "radius_m": 1000,
+      "estimator": "REG",
+      "control_strategy": "not_yet_treated",
+      "points": [],
+      "image": "/estimacoes/complementares/event-studies/event_1000m_notyet_reg_vv_medio_inscricao.png",
+      "source_file": "event_1000m_notyet_reg_vv_medio_inscricao.png"
+    }
+  ]
+}

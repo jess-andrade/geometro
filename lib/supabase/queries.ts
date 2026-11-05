@@ -15,27 +15,39 @@ import type {
   StudyPointRow,
   StudySummary,
   ScatterPoint,
+  TrackSensitivity,
+  TrackSensitivityPoint,
 } from '@/types/study';
 
 const emptyCollection = <T extends Geometry>(): FeatureCollection<T> => ({ type:'FeatureCollection', features:[] });
 
-type LineRow = { id:string; code:string; name:string; color_hex:string|null; status:string; source_name:string|null; geometry:Geometry };
+type LineRow = { id:string; code:string; name:string; color_hex:string|null; status:string; source_name:string|null; source_url:string|null; source_metadata:Record<string,unknown>; geometry:Geometry };
 type StationRow = { id:string; code:string|null; name:string; line_id:string; line_code:string; line_name:string; color_hex:string|null; inauguration_date:string|null; status:string; source_name:string|null; geometry:Point };
 
-export async function loadMapCollections() {
+export async function loadMapCollections(methodVersion='shapefile-track-v1') {
   const client = getSupabaseClient();
   if (!client) throw new Error('Variáveis públicas do Supabase não configuradas.');
   const [lineResult, stationResult] = await Promise.all([
-    client.from('v_metro_lines_map').select('*').order('code'),
+    client.from('v_metro_line_versions_map').select('*').eq('method_version',methodVersion).order('code'),
     client.from('v_stations_map').select('*').order('line_code').order('code'),
   ]);
   const error = lineResult.error ?? stationResult.error;
   if (error) throw error;
   const lineRows = (lineResult.data ?? []) as unknown as LineRow[];
   const stationRows = (stationResult.data ?? []) as unknown as StationRow[];
-  const lines:FeatureCollection = { type:'FeatureCollection', features:lineRows.map((row) => ({ type:'Feature', id:row.id, geometry:row.geometry, properties:{ id:row.id, code:row.code, name:row.name, color:row.color_hex, status:row.status, source_name:row.source_name } })) };
+  const lines:FeatureCollection = { type:'FeatureCollection', features:lineRows.map((row) => ({ type:'Feature', id:row.id, geometry:row.geometry, properties:{ id:row.id, code:row.code, name:row.name, color:row.color_hex, status:row.status, source_name:row.source_name, source_url:row.source_url, source_metadata:row.source_metadata } })) };
   const stations:FeatureCollection<Point> = { type:'FeatureCollection', features:stationRows.map((row) => ({ type:'Feature', id:row.id, geometry:row.geometry, properties:{ id:row.id, code:row.code, name:row.name, line:row.line_name, line_code:row.line_code, color:row.color_hex, inauguration_date:row.inauguration_date, status:row.status, source_name:row.source_name } })) as Feature<Point>[] };
   return { lines, stations, points:emptyCollection<Point>() };
+}
+
+export async function loadTrackSensitivity():Promise<{summary:TrackSensitivity;sample:TrackSensitivityPoint[]}> {
+  const client=getSupabaseClient();if(!client)throw new Error('Variáveis públicas do Supabase não configuradas.');
+  const [summaryResult,sampleResult]=await Promise.all([
+    client.from('v_track_version_sensitivity').select('*').single(),
+    client.from('v_track_version_sensitivity_sample').select('*'),
+  ]);
+  const error=summaryResult.error??sampleResult.error;if(error)throw error;
+  return {summary:summaryResult.data as unknown as TrackSensitivity,sample:(sampleResult.data??[]) as unknown as TrackSensitivityPoint[]};
 }
 
 export async function loadStudyPointsViewport(bounds:{west:number;south:number;east:number;north:number},zoom:number,signal?:AbortSignal):Promise<FeatureCollection<Point>> {
