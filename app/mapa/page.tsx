@@ -1,3 +1,6 @@
-import { AppShell } from '@/components/app-shell';
-import { MapWorkspace } from '@/features/map/map-workspace';
-export default function MapPage() { return <AppShell active="mapa"><MapWorkspace/></AppShell>; }
+import { redirect } from 'next/navigation';
+
+export default async function MapPage({searchParams}:{searchParams:Promise<{ponto?:string}>}){
+  const ponto=(await searchParams).ponto;
+  redirect(`/georreferenciamento?tab=mapa${ponto?`&ponto=${encodeURIComponent(ponto)}`:''}`);
+}

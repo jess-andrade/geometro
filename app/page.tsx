@@ -1,26 +1,21 @@
-import { AppShell, type Section } from '@/components/app-shell';
+import { AppShell } from '@/components/app-shell';
 import { OverviewPage } from '@/features/overview/overview-page';
-import { MapWorkspace } from '@/features/map/map-workspace';
-import { AnalysisPage } from '@/features/analysis/analysis-page';
-import { DataPage } from '@/features/data/data-page';
-import { MaterialsPage } from '@/features/materials/materials-page';
-import { MethodologyPage } from '@/features/methodology/methodology-page';
-import { EstimationsPage } from '@/features/estimations/estimations-page';
-import type { ComponentType } from 'react';
+import { redirect } from 'next/navigation';
 
-const pages = {
-  'visao-geral': OverviewPage,
-  mapa: MapWorkspace,
-  analises: AnalysisPage,
-  estimacoes: EstimationsPage,
-  dados: DataPage,
-  materiais: MaterialsPage,
-  metodologia: MethodologyPage,
-} satisfies Record<Section, ComponentType>;
-
-export default async function Page({ searchParams }:{ searchParams:Promise<{secao?:string}> }) {
-  const requested=(await searchParams).secao;
-  const active:Section=requested && requested in pages ? requested as Section : 'visao-geral';
-  const Content=pages[active];
-  return <AppShell active={active}><Content/></AppShell>;
+export default async function Page({ searchParams }:{ searchParams:Promise<{secao?:string;ponto?:string}> }) {
+  const params=await searchParams;
+  const requested=params.secao;
+  const legacy:Record<string,string>={
+    mapa:'/georreferenciamento?tab=mapa',
+    dados:'/georreferenciamento?tab=dados',
+    analises:'/georreferenciamento?tab=analises',
+    metodologia:'/georreferenciamento?tab=metodologia',
+    estimacoes:'/estimacoes',
+    materiais:'/materiais',
+  };
+  if(requested&&legacy[requested]){
+    const destination=requested==='mapa'&&params.ponto?`${legacy[requested]}&ponto=${encodeURIComponent(params.ponto)}`:legacy[requested];
+    redirect(destination);
+  }
+  return <AppShell active="visao-geral"><OverviewPage/></AppShell>;
 }

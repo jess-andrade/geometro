@@ -1,23 +1,20 @@
 'use client';
 
-import { BarChart3, BookOpenText, Calculator, Database, FileStack, LayoutDashboard, Map, Menu, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
+import { Calculator, FileStack, LayoutDashboard, MapPinned, Menu, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-export type Section = 'visao-geral' | 'mapa' | 'analises' | 'estimacoes' | 'dados' | 'materiais' | 'metodologia';
-const items: Array<{ id: Section; label: string; icon: typeof Map }> = [
+export type Section = 'visao-geral' | 'georreferenciamento' | 'estimacoes' | 'materiais';
+const items: Array<{ id: Section; label: string; icon: typeof MapPinned }> = [
   { id:'visao-geral', label:'Visão Geral', icon:LayoutDashboard },
-  { id:'mapa', label:'Mapa', icon:Map },
-  { id:'analises', label:'Análises', icon:BarChart3 },
+  { id:'georreferenciamento', label:'Georreferenciamento', icon:MapPinned },
   { id:'estimacoes', label:'Estimações', icon:Calculator },
-  { id:'dados', label:'Dados', icon:Database },
   { id:'materiais', label:'Materiais', icon:FileStack },
-  { id:'metodologia', label:'Metodologia', icon:BookOpenText },
 ];
 
 export function AppShell({ active, children }: { active: Section; children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeLabel = items.find((item) => item.id === active)?.label ?? 'Visão Geral';
-  const hrefFor = (id: Section) => id === 'visao-geral' ? '/' : id === 'estimacoes' ? '/estimacoes' : `/?secao=${id}`;
+  const hrefFor = (id: Section) => id === 'visao-geral' ? '/' : `/${id}`;
   return (
     <div className="min-h-screen bg-[#f5f7f4] lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
       <aside className={`${mobileOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 flex w-[252px] flex-col border-r border-[#dde4df] bg-[#fbfcfa] px-4 py-5 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0`}>
@@ -28,7 +25,7 @@ export function AppShell({ active, children }: { active: Section; children: Reac
         <nav className="mt-8 space-y-1" aria-label="Navegação principal">
           {items.map(({ id, label, icon: Icon }) => <a key={id} href={hrefFor(id)} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active === id ? 'bg-[#e4efe9] font-semibold text-[#155b47]' : 'font-medium text-[#5f6a66] hover:bg-[#eef2ef] hover:text-[#28332f]'}`}><Icon size={17} strokeWidth={active===id?2.2:1.8}/>{label}</a>)}
         </nav>
-        <div className="mt-auto rounded-2xl border border-[#dde5e0] bg-white p-3.5"><div className="flex items-center justify-between"><span className="text-xs font-semibold">Base de pesquisa</span><span className="h-2 w-2 rounded-full bg-amber-400"/></div><p className="mt-1.5 text-xs leading-5 text-[#75807c]">Aguardando importação dos dados geográficos.</p></div>
+        <div className="mt-auto rounded-2xl border border-[#dde5e0] bg-white p-3.5"><div className="flex items-center justify-between"><span className="text-xs font-semibold">Base de pesquisa</span><span className="h-2 w-2 rounded-full bg-emerald-500"/></div><p className="mt-1.5 text-xs leading-5 text-[#75807c]">Base geográfica validada e disponível para consulta.</p></div>
       </aside>
       {mobileOpen && <button className="fixed inset-0 z-30 bg-black/25 backdrop-blur-[1px] lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Fechar navegação"/>}
       <div className="min-w-0">

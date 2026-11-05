@@ -7,6 +7,7 @@ import type {
   Map as LeafletMap,
   Marker,
   Path,
+  PathOptions,
   TileLayer,
 } from 'leaflet';
 import type { Feature, FeatureCollection, Geometry, Point, Position } from 'geojson';
@@ -15,11 +16,13 @@ import { Crosshair, Download, Info, Layers3, MapPin, MousePointer2, RotateCcw, R
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { downloadPointsCsv } from '@/lib/csv/export-points';
 import { fallbackBaseMap, primaryBaseMap } from '@/lib/map/basemap';
-import { loadMapCollections, loadStudyMapPoint, loadStudyPointsViewport, searchStudyPoints } from '@/lib/supabase/queries';
+import { SHAPEFILE_TRACK, TRACK_VERSIONS, type TrackMethodVersion } from '@/lib/geo/track-versions';
+import { loadMapCollections, loadStudyMapPoint, loadStudyPointsViewport, loadTrackCatalog, loadTrackZones, searchStudyPoints, type TrackCatalog } from '@/lib/supabase/queries';
 import type { StudyMapPoint, StudyPointRow } from '@/types/study';
 
 type LeafletModule = typeof import('leaflet');
 type LayerKey = 'line1' | 'line2' | 'stations' | 'points' | 'buffers';
+type LineCode = 'L1' | 'L2';
 type AnalyzedPoint = {
   id:string; cep:string|null; street:string|null; locality:string|null; coordinates:Position;
   station:string; stationCoordinates:Position; stationDistance:number;
@@ -30,11 +33,17 @@ type AnalyzedPoint = {
 const FALLBACK_CENTER:[number,number]=[-12.945,-38.47];
 const FALLBACK_ZOOM=12;
 
-const layerOptions:Array<{key:LayerKey;label:string;color:string}>=[
-  {key:'line1',label:'Linha 1',color:'#176b52'}, {key:'line2',label:'Linha 2',color:'#246db4'},
-  {key:'stations',label:'Estações',color:'#26332f'}, {key:'points',label:'Pontos analisados',color:'#dc7a32'},
-  {key:'buffers',label:'Zonas de distância',color:'#8c6bc2'},
-];
+const zoneDefinitions=[
+  {code:'500_1000',outer:1000,inner:500,label:'Até 1.000 m do percurso',color:'#8bb7c7',opacity:.16},
+  {code:'250_500',outer:500,inner:250,label:'Até 500 m do percurso',color:'#78a5b8',opacity:.19},
+  {code:'100_250',outer:250,inner:100,label:'Até 250 m do percurso',color:'#6fa89c',opacity:.22},
+  {code:'50_100',outer:100,inner:50,label:'Até 100 m do percurso',color:'#d5a45f',opacity:.26},
+  {code:'0_50',outer:50,inner:0,label:'Até 50 m do percurso',color:'#c97842',opacity:.32},
+] as const;
+
+function trackStyle(code:LineCode):PathOptions{
+  return{color:TRACK_VERSIONS[SHAPEFILE_TRACK].color[code],weight:4,opacity:.92};
+}
 
 export function MapWorkspace(){
   const mapContainer=useRef<HTMLDivElement>(null);
@@ -42,7 +51,12 @@ export function MapWorkspace(){
   const leafletRef=useRef<LeafletModule|null>(null);
   const tileLayerRef=useRef<TileLayer|null>(null);
   const layerRefs=useRef<Partial<Record<LayerKey,LayerGroup>>>({});
-  const lineGeoJsonRefs=useRef<Partial<Record<'L1'|'L2',LeafletGeoJSON>>>({});
+  const trackLayerRefs=useRef<Partial<Record<TrackMethodVersion,Partial<Record<LineCode,LeafletGeoJSON>>>>>({});
+  const linesDataRef=useRef<FeatureCollection|null>(null);
+  const zonesCacheRef=useRef<Partial<Record<TrackMethodVersion,FeatureCollection>>>({});
+  const catalogRef=useRef<TrackCatalog|null>(null);
+  const buffersVisibleRef=useRef(false);
+  const selectedRef=useRef<AnalyzedPoint|null>(null);
   const analysisLayerRef=useRef<LayerGroup|null>(null);
   const networkBoundsRef=useRef<LatLngBounds|null>(null);
   const visiblePointFeaturesRef=useRef<Feature<Point>[]>([]);
@@ -67,14 +81,15 @@ export function MapWorkspace(){
   const [searchResults,setSearchResults]=useState<Array<{id:string;cep:string;street:string|null;locality:string|null;longitude:number;latitude:number}>>([]);
   const [searching,setSearching]=useState(false);
   const [boundsLabel,setBoundsLabel]=useState('carregando geometrias');
-  const [trackVersion,setTrackVersion]=useState<'shapefile-track-v1'|'provisional-track-v1'>('shapefile-track-v1');
+  const [zonesLoading,setZonesLoading]=useState(false);
 
   const setNetworkFocus=useCallback((selected:AnalyzedPoint|null)=>{
     const L=leafletRef.current;
     if(!L)return;
     for(const code of ['L1','L2'] as const){
-      lineGeoJsonRefs.current[code]?.eachLayer((layer)=>{
-        if(layer instanceof L.Path)(layer as Path).setStyle({opacity:selected?(selected.lineCode===code?1:.18):.92,weight:selected&&selected.lineCode===code?7:4});
+      const base=trackStyle(code);
+      trackLayerRefs.current[SHAPEFILE_TRACK]?.[code]?.eachLayer((layer)=>{
+        if(layer instanceof L.Path)(layer as Path).setStyle({...base,opacity:selected?(selected.lineCode===code?1:.18):base.opacity,weight:selected&&selected.lineCode===code?7:base.weight});
       });
     }
     layerRefs.current.stations?.eachLayer((layer)=>{
@@ -86,9 +101,45 @@ export function MapWorkspace(){
     });
   },[]);
 
+  const renderTracks=useCallback(()=>{
+    for(const code of ['L1','L2'] as const){
+      const group=layerRefs.current[code==='L1'?'line1':'line2'];
+      if(!group)continue;
+      group.clearLayers();
+      const active=trackLayerRefs.current[SHAPEFILE_TRACK]?.[code];
+      if(active){active.setStyle(trackStyle(code));group.addLayer(active);}
+    }
+    setNetworkFocus(selectedRef.current);
+  },[setNetworkFocus]);
+
+  const renderZones=useCallback(async()=>{
+    const L=leafletRef.current;const group=layerRefs.current.buffers;const trackCatalog=catalogRef.current;
+    if(!L||!group||!trackCatalog)return;
+    const version=SHAPEFILE_TRACK;
+    setZonesLoading(true);
+    try{
+      let zones=zonesCacheRef.current[version];
+      if(!zones){
+        zones=(await loadTrackZones(trackCatalog,version))??buildZonesLocally(linesDataRef.current,version);
+        zonesCacheRef.current[version]=zones;
+      }
+      group.clearLayers();
+      for(const zone of zoneDefinitions){
+        for(const feature of zones.features.filter((item)=>item.properties?.code===zone.code)){
+          L.geoJSON(feature,{pane:'zonesPane',style:{color:zone.color,weight:1,opacity:.8,fillColor:zone.color,fillOpacity:zone.opacity}})
+            .bindTooltip(`<strong>${zone.label}</strong><br>Área a até ${zone.outer.toLocaleString('pt-BR')} m do traçado metroviário utilizado no estudo.<br><em>Faixa exploratória.</em>`)
+            .addTo(group);
+        }
+      }
+      console.info('[GeoMetrô mapa] zonas de distância renderizadas',{version,polygons:zones.features.length,source:trackCatalog.versioned?'banco':'turf (fallback)'});
+    }catch(error){console.error('Falha ao carregar as zonas de distância.',error);}
+    finally{setZonesLoading(false);}
+  },[]);
+
   const showAnalysis=useCallback((selected:AnalyzedPoint,focus=true)=>{
     const L=leafletRef.current;const map=mapRef.current;const group=analysisLayerRef.current;
     if(!L||!map||!group)return;
+    selectedRef.current=selected;
     group.clearLayers();
     const origin=toLatLng(selected.coordinates);const station=toLatLng(selected.stationCoordinates);const line=toLatLng(selected.lineCoordinates);
     L.polyline([origin,station],{pane:'selectionPane',color:'#26332f',weight:2.5,dashArray:'6 6'}).bindTooltip(meters(selected.stationDistance)).addTo(group);
@@ -101,7 +152,7 @@ export function MapWorkspace(){
   },[setNetworkFocus]);
 
   const clearPoint=useCallback(()=>{
-    setPoint(null);analysisLayerRef.current?.clearLayers();setNetworkFocus(null);
+    selectedRef.current=null;setPoint(null);analysisLayerRef.current?.clearLayers();setNetworkFocus(null);
   },[setNetworkFocus]);
 
   useEffect(()=>{
@@ -183,19 +234,30 @@ export function MapWorkspace(){
         const line1=L.layerGroup().addTo(map);const line2=L.layerGroup().addTo(map);const stations=L.layerGroup().addTo(map);const points=L.layerGroup().addTo(map);const buffers=L.layerGroup();const analysis=L.layerGroup().addTo(map);
         layerRefs.current={line1,line2,stations,points,buffers};analysisLayerRef.current=analysis;
 
-        const data=await loadMapCollections(trackVersion);
-        for(const code of ['L1','L2'] as const){
-          const collection:FeatureCollection={type:'FeatureCollection',features:data.lines.features.filter((feature)=>feature.properties?.code===code)};
-          const target=code==='L1'?line1:line2;
-          const geoJson=L.geoJSON(collection as FeatureCollection<Geometry>,{
+        const trackCatalog=await loadTrackCatalog();
+        if(disposed)return;
+        if(!trackCatalog.available.includes(SHAPEFILE_TRACK))throw new Error('O traçado oficial shapefile-track-v1 não está disponível.');
+        catalogRef.current=trackCatalog;
+
+        const data=await loadMapCollections(trackCatalog);
+        if(disposed)return;
+        linesDataRef.current=data.lines;
+        const networkBounds=L.latLngBounds([]);
+        for(const feature of data.lines.features){
+          const version=(feature.properties?.method_version??SHAPEFILE_TRACK) as TrackMethodVersion;
+          const code=feature.properties?.code as LineCode;
+          if(version!==SHAPEFILE_TRACK||(code!=='L1'&&code!=='L2'))continue;
+          const geoJson=L.geoJSON(feature as Feature<Geometry>,{
             pane:'linesPane',
-            style:(feature)=>({color:String(feature?.properties?.color??(code==='L1'?'#176b52':'#246db4')),weight:4,opacity:.92}),
-            onEachFeature:(feature,layer)=>{
-              layer.bindTooltip(`<strong>${escapeHtml(String(feature.properties?.name??code))}</strong><br>Status: ${escapeHtml(statusLabel(feature.properties?.status))}<br>Fonte: ${escapeHtml(String(feature.properties?.source_name??'não informada'))}`);
+            style:()=>trackStyle(code),
+            onEachFeature:(_feature,layer)=>{
+              layer.bindTooltip(`<strong>${escapeHtml(String(feature.properties?.name??code))}</strong><br>Traçado oficial do estudo<br>Status: ${escapeHtml(statusLabel(feature.properties?.status))}`);
             },
-          }).addTo(target);
-          lineGeoJsonRefs.current[code]=geoJson;
+          });
+          (trackLayerRefs.current[version]??={})[code]=geoJson;
+          networkBounds.extend(geoJson.getBounds());
         }
+        renderTracks();
 
         for(const feature of data.stations.features){
           if(feature.geometry.type!=='Point')continue;
@@ -204,38 +266,16 @@ export function MapWorkspace(){
           station.bindTooltip(`<strong>${escapeHtml(String(properties.name??'Estação'))}</strong><br>${escapeHtml(String(properties.line??''))}<br>${escapeHtml(statusLabel(properties.status))}`);
           station.bindPopup(`<strong>${escapeHtml(String(properties.name??'Estação'))}</strong><br>Linha: ${escapeHtml(String(properties.line??''))}<br>Inauguração: ${escapeHtml(formatDate(properties.inauguration_date))}<br>Status: ${escapeHtml(statusLabel(properties.status))}`);
           station.on('click',()=>map.flyTo(latLng,Math.max(map.getZoom(),14),{duration:.8}));station.addTo(stations);
+          networkBounds.extend(latLng);
         }
 
-        const networkBounds=L.latLngBounds([]);
-        for(const geoJson of Object.values(lineGeoJsonRefs.current))if(geoJson)networkBounds.extend(geoJson.getBounds());
-        for(const feature of data.stations.features)if(feature.geometry.type==='Point')networkBounds.extend(toLatLng(feature.geometry.coordinates));
         if(networkBounds.isValid()){
           networkBoundsRef.current=networkBounds;
           const southWest=networkBounds.getSouthWest();const northEast=networkBounds.getNorthEast();
           setBoundsLabel(`${southWest.lat.toFixed(5)}, ${southWest.lng.toFixed(5)} → ${northEast.lat.toFixed(5)}, ${northEast.lng.toFixed(5)}`);
           map.fitBounds(networkBounds,{padding:[40,40],maxZoom:13});
         }
-
-        const zoneDefinitions=[
-          {outer:1000,inner:500,label:'Até 1.000 m do percurso',color:'#8bb7c7',opacity:.08},
-          {outer:500,inner:250,label:'Até 500 m do percurso',color:'#78a5b8',opacity:.1},
-          {outer:250,inner:100,label:'Até 250 m do percurso',color:'#6fa89c',opacity:.12},
-          {outer:100,inner:50,label:'Até 100 m do percurso',color:'#d5a45f',opacity:.14},
-          {outer:50,inner:0,label:'Até 50 m do percurso',color:'#c97842',opacity:.18},
-        ];
-        let zonePolygonCount=0;
-        for(const lineFeature of data.lines.features){
-          for(const zone of zoneDefinitions){
-            const outer=buffer(lineFeature,zone.outer,{units:'meters'});if(!outer)continue;
-            const geometry=zone.inner>0?difference(featureCollection([outer,buffer(lineFeature,zone.inner,{units:'meters'})!])):outer;
-            if(!geometry)continue;
-            L.geoJSON(geometry,{pane:'zonesPane',style:{color:zone.color,weight:1,opacity:.55,fillColor:zone.color,fillOpacity:zone.opacity}})
-              .bindTooltip(`<strong>${zone.label}</strong><br>Área localizada a até ${zone.outer.toLocaleString('pt-BR')} metros do traçado utilizado na análise.<br><em>Faixa exploratória.</em>`)
-              .addTo(buffers);
-            zonePolygonCount+=1;
-          }
-        }
-        console.info('[GeoMetrô mapa] rede e zonas Leaflet carregadas',{lines:data.lines.features.length,stations:data.stations.features.length,zonePolygons:zonePolygonCount,bounds:networkBounds.isValid()?networkBounds.toBBoxString():null});
+        console.info('[GeoMetrô mapa] rede Leaflet carregada',{versioned:trackCatalog.versioned,current:trackCatalog.current,lineFeatures:data.lines.features.length,stations:data.stations.features.length,bounds:networkBounds.isValid()?networkBounds.toBBoxString():null});
 
         const renderViewport=(collection:FeatureCollection<Point>)=>{
           points.clearLayers();visiblePointFeaturesRef.current=[];
@@ -265,7 +305,8 @@ export function MapWorkspace(){
             }
           }
           setVisiblePointCount(visiblePointFeaturesRef.current.length);
-          console.info('[GeoMetrô mapa] viewport Leaflet renderizado',{clusters:clusterCount,points:visiblePointFeaturesRef.current.length,zoom:map.getZoom()});
+          if(selectedRef.current)setNetworkFocus(selectedRef.current);
+          console.info('[GeoMetrô mapa] viewport Leaflet renderizado',{version:SHAPEFILE_TRACK,clusters:clusterCount,points:visiblePointFeaturesRef.current.length,zoom:map.getZoom()});
         };
 
         const refreshViewport=()=>{
@@ -274,7 +315,7 @@ export function MapWorkspace(){
             viewportController?.abort();const controller=new AbortController();viewportController=controller;
             const bounds=map.getBounds();setLoadingPoints(true);setViewportError(null);
             try{
-              const collection=await loadStudyPointsViewport({west:bounds.getWest(),south:bounds.getSouth(),east:bounds.getEast(),north:bounds.getNorth()},map.getZoom(),controller.signal);
+              const collection=await loadStudyPointsViewport(trackCatalog,SHAPEFILE_TRACK,{west:bounds.getWest(),south:bounds.getSouth(),east:bounds.getEast(),north:bounds.getNorth()},map.getZoom(),controller.signal);
               renderViewport(collection);
             }catch(error){
               if(!controller.signal.aborted&&!isAbortLike(error)){console.error('Falha ao carregar o viewport.',error);setViewportError('Falha ao carregar os pontos desta área.');}
@@ -286,7 +327,7 @@ export function MapWorkspace(){
         setFeatureCount(data.lines.features.length+data.stations.features.length+20041);setPointCount(20041);setMapReady(true);
         const requestedPointId=new URLSearchParams(window.location.search).get('ponto');
         if(requestedPointId&&/^[0-9a-f-]{36}$/i.test(requestedPointId)){
-          const row=await loadStudyMapPoint(requestedPointId);const selected=toAnalyzedPoint(row);
+          const row=await loadStudyMapPoint(trackCatalog,SHAPEFILE_TRACK,requestedPointId);const selected=toAnalyzedPoint(row);
           setAnalyzeMode(true);setPoint(selected);showAnalysis(selected);
         }
 
@@ -296,17 +337,26 @@ export function MapWorkspace(){
       }
     };
     void initialize();
-    return()=>{disposed=true;if(viewportTimer)clearTimeout(viewportTimer);viewportController?.abort();resizeObserver?.disconnect();mapRef.current?.remove();mapRef.current=null;leafletRef.current=null;};
-  },[showAnalysis,trackVersion]);
+    return()=>{disposed=true;if(viewportTimer)clearTimeout(viewportTimer);viewportController?.abort();resizeObserver?.disconnect();mapRef.current?.remove();mapRef.current=null;leafletRef.current=null;trackLayerRefs.current={};zonesCacheRef.current={};};
+  },[showAnalysis,renderTracks,setNetworkFocus]);
 
   useEffect(()=>{
+    buffersVisibleRef.current=layers.buffers;
     const map=mapRef.current;if(!mapReady||!map)return;
     (Object.keys(layers) as LayerKey[]).forEach((key)=>{const layer=layerRefs.current[key];if(!layer)return;if(layers[key])layer.addTo(map);else layer.removeFrom(map);});
-  },[layers,mapReady]);
+    if(layers.buffers&&layerRefs.current.buffers&&layerRefs.current.buffers.getLayers().length===0)void renderZones();
+  },[layers,mapReady,renderZones]);
 
-  const activeLegend=useMemo(()=>layerOptions.filter((layer)=>layers[layer.key]),[layers]);
+  const layerOptions=useMemo<Array<{key:LayerKey;label:string;color:string;dashed?:boolean}>>(()=>[
+    {key:'line1',label:'Linha 1',color:TRACK_VERSIONS[SHAPEFILE_TRACK].color.L1},
+    {key:'line2',label:'Linha 2',color:TRACK_VERSIONS[SHAPEFILE_TRACK].color.L2},
+    {key:'stations',label:'Estações',color:'#26332f'}, {key:'points',label:'Pontos analisados',color:'#dc7a32'},
+    {key:'buffers',label:zonesLoading?'Zonas de distância (carregando…)':'Zonas de distância',color:'#8c6bc2'},
+  ],[zonesLoading]);
+  const activeLegend=useMemo(()=>layerOptions.filter((layer)=>layers[layer.key]),[layerOptions,layers]);
   const selectSearchResult=async(id:string)=>{
-    try{const row=await loadStudyMapPoint(id);const selected=toAnalyzedPoint(row);setAnalyzeMode(true);setPoint(selected);setSearch('');setSearchResults([]);showAnalysis(selected);}
+    const trackCatalog=catalogRef.current;if(!trackCatalog)return;
+    try{const row=await loadStudyMapPoint(trackCatalog,SHAPEFILE_TRACK,id);const selected=toAnalyzedPoint(row);setAnalyzeMode(true);setPoint(selected);setSearch('');setSearchResults([]);showAnalysis(selected);}
     catch(error){console.error('Falha ao abrir o ponto selecionado.',error);setViewportError('Não foi possível abrir o CEP selecionado.');}
   };
   const exportVisible=()=>{
@@ -314,11 +364,10 @@ export function MapWorkspace(){
     if(rows.length)downloadPointsCsv(rows,'geometro-pontos-visiveis.csv');
   };
   const resetBounds=()=>{const map=mapRef.current;const bounds=networkBoundsRef.current;if(map&&bounds)map.fitBounds(bounds,{padding:[40,40],maxZoom:13});};
-
   return <section className="animate-in p-4 sm:p-6 lg:p-7">
     <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><div className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.12em] text-[#77827e]"><span className="h-px w-5 bg-[#9aa59f]"/>Exploração espacial</div><h1 className="text-2xl font-semibold tracking-[-.035em] sm:text-[28px]">Mapa do estudo</h1><p className="mt-1 text-sm text-[#6d7874]">Explore os 20.041 pontos válidos e suas relações com o metrô de Salvador.</p></div>
       <div className="flex flex-wrap items-center gap-2"><div className="flex rounded-xl border border-[#dce4df] bg-white p-1"><button onClick={()=>{setAnalyzeMode(false);clearPoint();}} aria-pressed={!analyzeMode} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${!analyzeMode?'bg-[#eaf3ee] text-[#176b52]':'text-[#6d7874]'}`}>Explorar Salvador</button><button onClick={()=>{setAnalyzeMode(true);clearPoint();}} aria-pressed={analyzeMode} className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${analyzeMode?'bg-[#176b52] text-white':'text-[#6d7874]'}`}><Crosshair size={14}/>Analisar ponto</button></div><span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${featureCount&&!loadError?'border-emerald-200 bg-emerald-50 text-emerald-800':'border-amber-200 bg-amber-50 text-amber-800'}`}><span className={`h-1.5 w-1.5 rounded-full ${featureCount&&!loadError?'bg-emerald-500':'bg-amber-500'}`}/>{loadError??(featureCount?`${pointCount.toLocaleString('pt-BR')} pontos na base`:'Carregando dados reais')}</span><button disabled={!visiblePointCount} onClick={exportVisible} className="grid h-9 w-9 place-items-center rounded-xl border border-[#dce4df] bg-white text-[#58635f] disabled:text-[#b3bdb8]" aria-label="Exportar pontos visíveis"><Download size={15}/></button><button onClick={resetBounds} className="grid h-9 w-9 place-items-center rounded-xl border border-[#dce4df] bg-white text-[#58635f]" aria-label="Enquadrar rede metroviária"><RotateCcw size={15}/></button></div></div>
-    <div className="relative h-[calc(100vh-174px)] min-h-[620px] overflow-hidden rounded-[22px] border border-[#d8e0db] bg-[#e7ebe8] shadow-[0_16px_50px_rgb(24_43_36/8%)]">
+    <div className="relative h-[calc(100vh-174px)] min-h-[680px] overflow-hidden rounded-[22px] border border-[#d8e0db] bg-[#e7ebe8] shadow-[0_16px_50px_rgb(24_43_36/8%)]">
       <div ref={mapContainer} className="absolute inset-0 h-full w-full" aria-label="Mapa Leaflet interativo do metrô de Salvador"/>
       {!mapReady&&<div className="pointer-events-none absolute inset-x-0 top-0 z-[900] grid place-items-center bg-white/85 py-2 text-xs font-medium text-[#68746f]">Carregando rede metroviária…</div>}
       <div className="absolute right-3 top-3 z-[900] w-[min(340px,calc(100%-24px))] rounded-2xl border border-white/80 bg-white/95 p-3 shadow-[0_10px_32px_rgb(25_45_37/15%)] backdrop-blur-md sm:right-4"><label className="flex items-center gap-2 rounded-xl border border-[#dce4df] bg-[#fafbfa] px-3"><Crosshair size={15} className="text-[#176b52]"/><input value={search} onChange={(event)=>{const value=event.target.value;setSearch(value);if(value.trim().length<2){setSearchResults([]);setSearching(false);}}} placeholder="Selecionar CEP, rua ou localidade" className="h-9 w-full bg-transparent text-xs outline-none"/></label>{(searching||searchResults.length>0)&&<div className="mt-2 max-h-56 overflow-auto rounded-xl border border-[#e2e8e4] bg-white p-1">{searching?<p className="p-2 text-xs text-[#7b8782]">Buscando…</p>:searchResults.map((result)=><button key={result.id} onClick={()=>selectSearchResult(result.id)} className="block w-full rounded-lg px-2 py-2 text-left hover:bg-[#f2f6f3]"><span className="block text-xs font-semibold text-[#35413d]">{result.cep} · {result.street??'Logradouro não informado'}</span><span className="text-[10px] text-[#7d8984]">{result.locality}</span></button>)}</div>}</div>
@@ -326,22 +375,40 @@ export function MapWorkspace(){
       {viewportError&&<div className="absolute left-1/2 top-14 z-[900] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 shadow-sm"><span>{viewportError}</span><button onClick={()=>refreshViewportRef.current()} className="font-semibold underline">Tentar novamente</button></div>}
       {baseMapState==='error'&&<div role="alert" className="absolute inset-x-3 top-20 z-[900] mx-auto max-w-xl rounded-2xl border border-red-200 bg-white/98 p-4 text-sm text-red-900 shadow-xl"><p className="font-semibold">Não foi possível carregar o mapa-base.</p><p className="mt-1 text-xs leading-5 text-red-700">{baseMapError}</p></div>}
       <div title={`Leaflet · ${baseMapProvider} · bounds ${boundsLabel}`} className="pointer-events-none absolute bottom-1 left-1/2 z-[900] -translate-x-1/2 rounded-full bg-white/90 px-2.5 py-1 text-[9px] font-medium text-[#5f6b66] shadow-sm">Fonte: {baseMapProvider} · erros: {tileErrorCount} · fallback: {fallbackTriggered?'acionado':'não acionado'}</div>
-      <div className="absolute left-3 top-3 z-[900] w-[min(290px,calc(100%-24px))] rounded-2xl border border-white/80 bg-white/94 p-3.5 shadow-[0_10px_32px_rgb(25_45_37/15%)] backdrop-blur-md sm:left-4 sm:top-4"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Layers3 size={16} className="text-[#176b52]"/><h2 className="text-sm font-semibold">Camadas do mapa</h2></div><span className="text-[10px] font-medium text-[#8a9490]">{activeLegend.length} ATIVAS</span></div><div className="space-y-1">{layerOptions.map((layer)=><div key={layer.key} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-[#f3f6f4]"><button role="switch" aria-label={`${layers[layer.key]?'Ocultar':'Mostrar'} ${layer.label}`} aria-checked={layers[layer.key]} onClick={()=>setLayers((current)=>({...current,[layer.key]:!current[layer.key]}))} className={`relative h-5 w-9 rounded-full transition ${layers[layer.key]?'bg-[#276f59]':'bg-[#d5ddd8]'}`}><span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${layers[layer.key]?'left-[18px]':'left-0.5'}`}/></button><span className="h-2.5 w-2.5 rounded-full" style={{background:layer.color}}/><span className="text-xs font-medium text-[#45514d]">{layer.label}</span></div>)}</div></div>
-      <div className="pointer-events-none absolute bottom-6 left-3 z-[900] max-w-[min(390px,calc(100%-24px))] rounded-2xl border border-white/80 bg-white/94 px-4 py-3 shadow-[0_10px_32px_rgb(25_45_37/14%)] backdrop-blur-md sm:left-4"><div className="mb-2 flex items-center gap-2"><Info size={13} className="text-[#176b52]"/><span className="text-[11px] font-semibold uppercase tracking-[.1em] text-[#65716c]">Legenda</span></div><div className="flex flex-wrap gap-x-4 gap-y-2">{activeLegend.map((item)=><span key={item.key} className="flex items-center gap-1.5 text-[11px] font-medium text-[#58635f]"><span className="h-2 w-2 rounded-full" style={{background:item.color}}/>{item.label}</span>)}</div><div className="mt-3 border-t border-[#e1e7e3] pt-3 text-[10px] leading-4 text-[#65716c]"><strong className="block text-[11px] text-[#35413d]">Como interpretar o mapa?</strong><p className="mt-1"><strong>Pontos analisados:</strong> cada ponto representa um CEP georreferenciado utilizado no estudo. Eles não representam necessariamente imóveis individuais.</p><p className="mt-1"><strong>Zonas de distância:</strong> mostram proximidade em relação ao percurso do metrô. São faixas exploratórias e não significam, por si só, efeito sobre valorização imobiliária.</p></div></div>
-      <div className="pointer-events-none absolute left-3 top-[330px] z-[900] max-w-[290px] rounded-xl border border-emerald-200 bg-emerald-50/95 px-3 py-2 text-[10px] leading-4 text-emerald-900 shadow-sm sm:left-4"><strong>Traçado real:</strong> geometria ferroviária das Linhas 1 e 2 extraída do OpenStreetMap, com curvas e segmentos intermediários.</div>
+      <div className="absolute left-3 top-3 z-[900] w-[min(300px,calc(100%-24px))] rounded-2xl border border-white/80 bg-white/94 p-3.5 shadow-[0_10px_32px_rgb(25_45_37/15%)] backdrop-blur-md sm:left-4 sm:top-4">
+        <div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Layers3 size={16} className="text-[#176b52]"/><h2 className="text-sm font-semibold">Camadas do mapa</h2></div><span className="text-[10px] font-medium text-[#8a9490]">{activeLegend.length} ATIVAS</span></div>
+        <div className="space-y-1">{layerOptions.map((layer)=><div key={layer.key} className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-[#f3f6f4]"><button role="switch" aria-label={`${layers[layer.key]?'Ocultar':'Mostrar'} ${layer.label}`} aria-checked={layers[layer.key]} onClick={()=>setLayers((current)=>({...current,[layer.key]:!current[layer.key]}))} className={`relative h-5 w-9 rounded-full transition ${layers[layer.key]?'bg-[#276f59]':'bg-[#d5ddd8]'}`}><span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${layers[layer.key]?'left-[18px]':'left-0.5'}`}/></button><LegendSwatch color={layer.color} dashed={layer.dashed} line={layer.key==='line1'||layer.key==='line2'}/><span className="text-xs font-medium text-[#45514d]">{layer.label}</span></div>)}</div>
+      </div>
+      <div className="pointer-events-none absolute bottom-6 left-3 z-[900] max-w-[min(390px,calc(100%-24px))] rounded-2xl border border-white/80 bg-white/94 px-4 py-3 shadow-[0_10px_32px_rgb(25_45_37/14%)] backdrop-blur-md sm:left-4"><div className="mb-2 flex items-center gap-2"><Info size={13} className="text-[#176b52]"/><span className="text-[11px] font-semibold uppercase tracking-[.1em] text-[#65716c]">Legenda</span></div><div className="flex flex-wrap gap-x-4 gap-y-2">{activeLegend.map((item)=><span key={item.key} className="flex items-center gap-1.5 text-[11px] font-medium text-[#58635f]"><LegendSwatch color={item.color} dashed={item.dashed} line={item.key==='line1'||item.key==='line2'}/>{item.label}</span>)}</div><div className="mt-3 border-t border-[#e1e7e3] pt-3 text-[10px] leading-4 text-[#65716c]"><strong className="block text-[11px] text-[#35413d]">Como interpretar o mapa?</strong><p className="mt-1"><strong>Pontos analisados:</strong> cada ponto representa um CEP georreferenciado utilizado no estudo. Eles não representam necessariamente imóveis individuais.</p><p className="mt-1"><strong>Zonas de distância:</strong> mostram proximidade em relação ao traçado metroviário utilizado no estudo. São faixas exploratórias e não significam, por si só, efeito sobre valorização imobiliária.</p></div></div>
       {!point?<div className="pointer-events-none absolute bottom-6 right-3 z-[900] w-[min(340px,calc(100%-24px))] rounded-2xl border border-[#dbe3de] bg-[#17241f]/94 p-4 text-white shadow-xl backdrop-blur-md sm:right-16"><div className="flex gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10"><MousePointer2 size={17}/></span><div><h3 className="text-sm font-semibold">{analyzeMode?'Selecione um ponto individual':'Analisar ponto'}</h3><p className="mt-1 text-xs leading-5 text-white/65">{analyzeMode?'Aproxime o mapa e clique em um ponto laranja para destacar suas conexões.':'Ative o modo de análise para visualizar a estação, a linha e os dois segmentos de proximidade.'}</p></div></div></div>:
-        <div className="absolute bottom-6 right-3 z-[900] w-[min(370px,calc(100%-24px))] rounded-2xl border border-[#dbe3de] bg-white/96 p-4 shadow-[0_16px_44px_rgb(20_39_32/22%)] backdrop-blur-md sm:right-16"><div className="flex items-start justify-between"><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-[#fff0e7] text-[#bd5b20]"><MapPin size={16}/></span><div><p className="text-sm font-semibold">{point.street??`CEP ${point.cep}`}</p><p className="text-[11px] text-[#7b8581]">{point.locality} · {point.cep}</p></div></div><button onClick={clearPoint} className="rounded-lg p-1.5 text-[#7b8581] hover:bg-[#eef2ef]" aria-label="Limpar análise"><X size={15}/></button></div><div className="mt-3 grid grid-cols-2 gap-2"><Metric icon={<TrainFront size={14}/>} label="Estação mais próxima" value={`${point.station} · ${meters(point.stationDistance)}`}/><Metric icon={<Route size={14}/>} label="Linha mais próxima" value={`${point.line} · ${meters(point.lineDistance)}`}/></div><p className="mt-3 flex items-start gap-2 text-[11px] leading-4 text-[#77827e]"><Info size={13} className="mt-0.5 shrink-0"/><span><strong>Distância ao percurso:</strong> {point.range??'não classificada'}. Conexão escura até a estação; conexão laranja até o ponto mais próximo do traçado real.</span></p></div>}
+        <div className="absolute bottom-6 right-3 z-[900] w-[min(370px,calc(100%-24px))] rounded-2xl border border-[#dbe3de] bg-white/96 p-4 shadow-[0_16px_44px_rgb(20_39_32/22%)] backdrop-blur-md sm:right-16"><div className="flex items-start justify-between"><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-xl bg-[#fff0e7] text-[#bd5b20]"><MapPin size={16}/></span><div><p className="text-sm font-semibold">{point.street??`CEP ${point.cep}`}</p><p className="text-[11px] text-[#7b8581]">{point.locality} · {point.cep}</p></div></div><button onClick={clearPoint} className="rounded-lg p-1.5 text-[#7b8581] hover:bg-[#eef2ef]" aria-label="Limpar análise"><X size={15}/></button></div><div className="mt-3 grid grid-cols-2 gap-2"><Metric icon={<TrainFront size={14}/>} label="Estação mais próxima" value={`${point.station} · ${meters(point.stationDistance)}`}/><Metric icon={<Route size={14}/>} label="Linha mais próxima" value={`${point.line} · ${meters(point.lineDistance)}`}/></div><p className="mt-3 flex items-start gap-2 text-[11px] leading-4 text-[#77827e]"><Info size={13} className="mt-0.5 shrink-0"/><span><strong>Distância ao percurso:</strong> {point.range??'não classificada'}, medida em relação ao traçado metroviário utilizado no estudo. Conexão escura até a estação; conexão laranja até o ponto mais próximo do traçado.</span></p></div>}
     </div>
   </section>;
 }
 
+function buildZonesLocally(lines:FeatureCollection|null,version:TrackMethodVersion):FeatureCollection{
+  // Fallback para bancos sem a migration: buffers geodésicos aproximados via turf.
+  const features:Feature[]=[];
+  for(const lineFeature of lines?.features.filter((feature)=>(feature.properties?.method_version??SHAPEFILE_TRACK)===version)??[]){
+    for(const zone of zoneDefinitions){
+      const outer=buffer(lineFeature,zone.outer,{units:'meters'});if(!outer)continue;
+      const geometry=zone.inner>0?difference(featureCollection([outer,buffer(lineFeature,zone.inner,{units:'meters'})!])):outer;
+      if(geometry)features.push({...geometry,properties:{code:zone.code}});
+    }
+  }
+  return {type:'FeatureCollection',features};
+}
+function LegendSwatch({color,dashed,line}:{color:string;dashed?:boolean;line?:boolean}){
+  if(!line)return <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{background:color}}/>;
+  return <span className="inline-block h-0 w-5 shrink-0 border-t-[3px]" style={{borderColor:color,borderStyle:dashed?'dashed':'solid'}}/>;
+}
 function Metric({icon,label,value}:{icon:ReactNode;label:string;value:string}){return <div className="rounded-xl border border-[#e0e6e2] p-3"><span className="mb-2 flex items-center gap-1.5 text-[#73807b]">{icon}<span className="text-[10px] font-medium">{label}</span></span><p className="text-xs font-semibold text-[#37433f]">{value}</p></div>;}
 function meters(value:number){return `${Math.round(value).toLocaleString('pt-BR')} m`;}
 function toLatLng(position:Position):[number,number]{return[Number(position[1]),Number(position[0])];}
 function stringOrNull(value:unknown){return value===null||value===undefined||value===''?null:String(value);}
 function parsePoint(value:unknown):Point|null{if(value&&typeof value==='object'&&(value as Point).type==='Point')return value as Point;if(typeof value==='string'){try{const parsed=JSON.parse(value) as Point;return parsed.type==='Point'?parsed:null;}catch{return null;}}return null;}
 function toAnalyzedPoint(row:StudyMapPoint):AnalyzedPoint{return{id:row.id,cep:row.cep,street:row.street,locality:row.locality,coordinates:row.geometry.coordinates,station:row.nearest_station_name,stationCoordinates:[row.nearest_station_longitude,row.nearest_station_latitude],stationDistance:row.distance_station_m,line:row.nearest_line_name,lineCode:row.nearest_line_code,lineCoordinates:row.closest_point.coordinates,lineDistance:row.distance_line_m,range:row.distance_line_range,methodVersion:row.method_version};}
-function featureToAnalyzedPoint(feature:Feature<Point>):AnalyzedPoint|null{const properties=feature.properties??{};const closest=parsePoint(properties.closest_point);const station:[number,number]=[Number(properties.nearest_station_longitude),Number(properties.nearest_station_latitude)];if(!closest||station.some((value)=>!Number.isFinite(value)))return null;return{id:String(feature.id??properties.id),cep:stringOrNull(properties.cep),street:stringOrNull(properties.street),locality:stringOrNull(properties.locality),coordinates:feature.geometry.coordinates,station:String(properties.nearest_station_name),stationCoordinates:station,stationDistance:Number(properties.distance_station_m),line:String(properties.nearest_line_name),lineCode:String(properties.nearest_line_code),lineCoordinates:closest.coordinates,lineDistance:Number(properties.distance_line_m),range:stringOrNull(properties.distance_line_range),methodVersion:String(properties.method_version)};}
+function featureToAnalyzedPoint(feature:Feature<Point>):AnalyzedPoint|null{const properties=feature.properties??{};const closest=parsePoint(properties.closest_point);const station:[number,number]=[Number(properties.nearest_station_longitude),Number(properties.nearest_station_latitude)];if(!closest||station.some((value)=>!Number.isFinite(value)))return null;return{id:String(feature.id??properties.id),cep:stringOrNull(properties.cep),street:stringOrNull(properties.street),locality:stringOrNull(properties.locality),coordinates:feature.geometry.coordinates,station:String(properties.nearest_station_name),stationCoordinates:station,stationDistance:Number(properties.distance_station_m),line:String(properties.nearest_line_name),lineCode:String(properties.nearest_line_code),lineCoordinates:closest.coordinates,lineDistance:Number(properties.distance_line_m),range:stringOrNull(properties.distance_line_range),methodVersion:String(properties.method_version??SHAPEFILE_TRACK)};}
 function pointTooltip(properties:Record<string,unknown>){return `<strong>${escapeHtml(String(properties.street??properties.cep??'Ponto analisado'))}</strong><br>CEP: ${escapeHtml(String(properties.cep??'não informado'))}<br>Estação: ${escapeHtml(String(properties.nearest_station_name??''))}<br>Distância: ${escapeHtml(formatDistance(properties.distance_station_m)??'')}`;}
 function formatDistance(value:unknown){const number=Number(value);return Number.isFinite(number)?meters(number):null;}
 function formatDate(value:unknown){if(!value)return'Não informada';const date=new Date(`${String(value)}T00:00:00`);return Number.isNaN(date.getTime())?'Não informada':date.toLocaleDateString('pt-BR');}
