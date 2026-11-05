@@ -1,12 +1,13 @@
 'use client';
 
-import { Calculator, FileStack, LayoutDashboard, MapPinned, Menu, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
+import { Calculator, FileStack, LayoutDashboard, MapPinned, Menu, Milestone, PanelLeftClose, Search, TrainFront, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-export type Section = 'visao-geral' | 'georreferenciamento' | 'estimacoes' | 'materiais';
+export type Section = 'visao-geral' | 'georreferenciamento' | 'trilha' | 'estimacoes' | 'materiais';
 const items: Array<{ id: Section; label: string; icon: typeof MapPinned }> = [
   { id:'visao-geral', label:'Visão Geral', icon:LayoutDashboard },
   { id:'georreferenciamento', label:'Georreferenciamento', icon:MapPinned },
+  { id:'trilha', label:'Trilha do Projeto', icon:Milestone },
   { id:'estimacoes', label:'Estimações', icon:Calculator },
   { id:'materiais', label:'Materiais', icon:FileStack },
 ];
