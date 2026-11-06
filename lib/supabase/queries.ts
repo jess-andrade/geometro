@@ -254,6 +254,6 @@ export async function loadAllStudyPointsForExport(filters:StudyPointFilters) {
 
 export async function loadResearchMaterials():Promise<ResearchMaterial[]> {
   const client=getSupabaseClient(); if(!client) return [];
-  const {data,error}=await client.from('research_materials').select('id,title,description,material_type,storage_path,external_url,responsible,publication_date,uploader_name,file_size_bytes,created_at').order('created_at',{ascending:false});
+  const {data,error}=await client.from('research_materials').select('id,title,description,material_type,storage_path,external_url,responsible,publication_date,uploader_name,file_size_bytes,trail_stage_slug,trail_folder_id,created_at').order('created_at',{ascending:false});
   if(error) throw error; return (data ?? []) as ResearchMaterial[];
 }

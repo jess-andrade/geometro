@@ -138,5 +138,7 @@ export type ResearchMaterial = {
   publication_date: string | null;
   uploader_name: string | null;
   file_size_bytes: number | null;
+  trail_stage_slug: string | null;
+  trail_folder_id: string | null;
   created_at: string;
 };

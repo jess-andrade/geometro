@@ -137,3 +137,91 @@ export const trailStages:TrailStage[]=[
     materials:[],note:'Os coeficientes foram transcritos dos relatórios existentes; nenhuma regressão foi reexecutada.',visual:'results',link:{label:'Abrir em Estimações',href:'/estimacoes'}
   }
 ];
+
+export type TrailSectionSlug =
+  | 'base-original'
+  | 'georreferenciamento'
+  | 'preparacao-espacial'
+  | 'preparacao-econometrica'
+  | 'estimacao'
+  | 'resultados';
+
+export type TrailSection = {
+  slug: TrailSectionSlug;
+  number: number;
+  title: string;
+  kicker: string;
+  summary: string;
+  status: 'Concluída' | 'Resultados disponíveis';
+  color: string;
+  soft: string;
+  input: string;
+  process: string;
+  output: string;
+  product: string;
+  stages: TrailStage[];
+};
+
+const stage = (id:string) => trailStages.find((item) => item.id === id)!;
+
+export const trailSections:TrailSection[] = [
+  {
+    slug:'base-original', number:1, title:'Base original', kicker:'O ponto de partida',
+    summary:'A série anual de imóveis por CEP reúne os atributos cadastrais, territoriais e tributários usados em toda a pesquisa.',
+    status:'Concluída', color:'#b56a2d', soft:'#fbefe5',
+    input:'Planilhas anuais de 2011 a 2024, agregadas por CEP de Salvador.',
+    process:'Leitura, padronização da chave CEP e preservação das variáveis analíticas.',
+    output:'Base de trabalho organizada e lista de CEPs pronta para localização espacial.',
+    product:'dados_imoveis.xlsx', stages:[stage('base-original')],
+  },
+  {
+    slug:'georreferenciamento', number:2, title:'Georreferenciamento', kicker:'Quatro passagens e validação',
+    summary:'Os CEPs passam por organização, busca inicial, enriquecimento, validação complementar e consolidação com rastreabilidade da origem.',
+    status:'Concluída', color:'#187454', soft:'#e7f4ed',
+    input:'CEPs únicos extraídos da base anual.',
+    process:'geocodebr, BrasilAPI, Google, ViaCEP e OpenStreetMap são combinados em etapas sucessivas de recuperação e controle de qualidade.',
+    output:'Base consolidada com coordenadas, etapa de origem e indicadores de precisão.',
+    product:'20.041 pontos espaciais válidos na base atual',
+    stages:[stage('organizacao-ceps'),stage('georreferenciamento-inicial'),stage('enriquecimento'),stage('validacao-complementar'),stage('consolidacao')],
+  },
+  {
+    slug:'preparacao-espacial', number:3, title:'Preparação espacial', kicker:'Do mapa às métricas',
+    summary:'O traçado validado e as estações formam a referência para medir acesso ao sistema e proximidade à infraestrutura.',
+    status:'Concluída', color:'#16758a', soft:'#e7f3f6',
+    input:'CEPs georreferenciados, shapefile do metrô e cadastro das estações.',
+    process:'Validação do CRS, versionamento do traçado e cálculo geodésico das distâncias no PostGIS.',
+    output:'Distâncias por linha, estação mais próxima, ponto no traçado e faixas de proximidade.',
+    product:'shapefile-track-v1 e 40.082 relações CEP × linha',
+    stages:[stage('representacao-metro'),stage('distancias')],
+  },
+  {
+    slug:'preparacao-econometrica', number:4, title:'Preparação econométrica', kicker:'Da geografia ao painel',
+    summary:'As variáveis espaciais e cadastrais são combinadas e submetidas às regras que definem a amostra principal.',
+    status:'Concluída', color:'#6b65a6', soft:'#efeff9',
+    input:'Base anual georreferenciada e métricas de distância ao metrô.',
+    process:'Integração das variáveis, montagem CEP × ano, balanceamento e recorte espacial.',
+    output:'Painel analítico e arquivos .dta prontos para os modelos.',
+    product:'150.584 observações em 14 exercícios',
+    stages:[stage('preparacao-econometrica'),stage('amostra')],
+  },
+  {
+    slug:'estimacao', number:5, title:'Estimações no Stata', kicker:'Estratégia e execução',
+    summary:'A estratégia de diferenças-em-diferenças é executada em raios crescentes para cinco outcomes principais.',
+    status:'Resultados disponíveis', color:'#315d9b', soft:'#e9eff8',
+    input:'Painel balanceado, tratamentos por raio e estratégias de controle.',
+    process:'Estimação REG e DRIPW, controles Never Treated, erros clusterizados e estudos de evento.',
+    output:'Coeficientes, erros-padrão, intervalos de confiança, tabelas e relatórios.',
+    product:'200 estimativas principais publicadas',
+    stages:[stage('estrategia'),stage('estimacoes-stata')],
+  },
+  {
+    slug:'resultados', number:6, title:'Resultados', kicker:'Produtos da pesquisa',
+    summary:'Os resultados estruturados, relatórios e figuras são reunidos para leitura e conferência dos materiais originais.',
+    status:'Resultados disponíveis', color:'#7c3655', soft:'#f6eaf0',
+    input:'Saídas documentadas das estimações e relatórios finais.',
+    process:'Transcrição auditável, organização por outcome e publicação das visualizações.',
+    output:'Resultados navegáveis, relatórios e materiais complementares.',
+    product:'5 outcomes, 90 estimativas por linha e 22 estudos de evento',
+    stages:[stage('resultados')],
+  },
+];

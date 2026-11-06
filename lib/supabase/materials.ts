@@ -13,7 +13,7 @@ const contentTypes:Record<string,string>={
 
 export type MaterialSubmission={
   title:string;description:string;materialType:string;publicationDate:string;uploaderName:string;uploaderEmail:string;
-  file:File|null;externalUrl:string;honeypot?:string;
+  file:File|null;externalUrl:string;honeypot?:string;trailStageSlug?:string|null;trailFolderId?:string|null;
 };
 
 export async function submitResearchMaterial(input:MaterialSubmission):Promise<ResearchMaterial>{
@@ -43,8 +43,8 @@ export async function submitResearchMaterial(input:MaterialSubmission):Promise<R
   const {data,error}=await client.from('research_materials').insert({
     title,description:description||null,material_type:materialType,storage_path:storagePath,external_url:externalUrl,
     publication_date:input.publicationDate||null,uploader_name:uploaderName||null,uploader_email:uploaderEmail||null,
-    file_size_bytes:input.file?.size??null,
-  }).select('id,title,description,material_type,storage_path,external_url,responsible,publication_date,uploader_name,file_size_bytes,created_at').single();
+    file_size_bytes:input.file?.size??null,trail_stage_slug:input.trailStageSlug??null,trail_folder_id:input.trailFolderId??null,
+  }).select('id,title,description,material_type,storage_path,external_url,responsible,publication_date,uploader_name,file_size_bytes,trail_stage_slug,trail_folder_id,created_at').single();
   if(error){if(storagePath)await client.storage.from(RESEARCH_MATERIALS_BUCKET).remove([storagePath]);throw new Error(`O arquivo foi recebido, mas os metadados não puderam ser registrados: ${error.message}`);}
   return data as ResearchMaterial;
 }
