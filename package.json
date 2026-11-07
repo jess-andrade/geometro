@@ -15,6 +15,7 @@
     "@radix-ui/react-tooltip": "1.2.16",
     "@supabase/supabase-js": "2.116.0",
     "@turf/turf": "7.4.0",
+    "jspdf": "^4.2.1",
     "leaflet": "1.9.4",
     "lucide-react": "1.44.0",
     "maplibre-gl": "6.9.0",

@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, ArrowRight, BarChart3, BookOpen, CircleHelp, Compass, Database, FlaskConical, Lightbulb, MapPin, Scale, TrainFront } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, BookOpen, CircleHelp, Compass, Database, Download, FlaskConical, Lightbulb, LoaderCircle, MapPin, Scale, TrainFront } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import source from '@/data/exploratory.json';
@@ -38,8 +38,21 @@ const ratio=(a:number|null|undefined,b:number|null|undefined)=>a&&b?fmt(a/b,1):'
 
 export function ExploratoryPage(){
   const [tab,setTab]=useState<Tab>('visao');
+  const [pdfStatus,setPdfStatus]=useState<'idle'|'loading'|'error'>('idle');
+  const downloadReport=async()=>{
+    if(pdfStatus==='loading')return;
+    setPdfStatus('loading');
+    try{
+      const {downloadExploratoryReport}=await import('@/lib/pdf/exploratory-report');
+      await downloadExploratoryReport();
+      setPdfStatus('idle');
+    }catch(error){
+      console.error('Não foi possível gerar o relatório exploratório.',error);
+      setPdfStatus('error');
+    }
+  };
   return <section className="animate-in px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-    <header className="relative overflow-hidden rounded-[30px] bg-[#17372d] px-5 py-7 text-white shadow-[0_22px_70px_rgba(20,48,39,.15)] sm:px-8 sm:py-9"><div aria-hidden className="absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10"/><div className="relative"><p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#b5dfc9]"><Compass size={15}/> Laboratório de investigação</p><h1 className="mt-3 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Pesquisa Exploratória</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-[#d4e5da]">O que os dados imobiliários revelam sobre Salvador e sobre a expansão do metrô? Explore padrões, compare grupos e transforme achados em novas perguntas.</p><p className="mt-4 max-w-3xl text-xs text-[#b6cfbf]">Resultados descritivos e exploratórios. Associações observadas não substituem as estimações oficiais nem demonstram causalidade.</p></div></header>
+    <header className="relative overflow-hidden rounded-[30px] bg-[#17372d] px-5 py-7 text-white shadow-[0_22px_70px_rgba(20,48,39,.15)] sm:px-8 sm:py-9"><div aria-hidden className="absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10"/><div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div><p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em] text-[#b5dfc9]"><Compass size={15}/> Laboratório de investigação</p><div className="mt-3 flex flex-wrap items-center gap-3"><h1 className="text-3xl font-semibold tracking-[-.045em] sm:text-4xl">Pesquisa Exploratória</h1><span className="rounded-full border border-amber-200/40 bg-amber-300/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[.1em] text-amber-100">Em construção</span></div><p className="mt-3 max-w-3xl text-sm leading-6 text-[#d4e5da]">O que os dados imobiliários revelam sobre Salvador e sobre a expansão do metrô? Explore padrões, compare grupos e transforme achados em novas perguntas.</p><p className="mt-4 text-xs font-medium text-[#d9e9df]">Jessica Andrade <span aria-hidden className="mx-1 text-[#729383]">·</span> Análise de 06/11/2026</p><p className="mt-2 max-w-3xl text-xs text-[#b6cfbf]">Resultados descritivos e exploratórios. Associações observadas não substituem as estimações oficiais nem demonstram causalidade.</p></div><div className="shrink-0"><button type="button" onClick={downloadReport} disabled={pdfStatus==='loading'} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white px-4 py-2.5 text-sm font-semibold text-[#17372d] shadow-sm transition hover:bg-[#eff7f2] disabled:cursor-wait disabled:opacity-75">{pdfStatus==='loading'?<LoaderCircle size={17} className="animate-spin"/>:<Download size={17}/>} {pdfStatus==='loading'?'Gerando relatório…':'Baixar relatório'}</button>{pdfStatus==='error'&&<p role="alert" className="mt-2 max-w-56 text-xs leading-5 text-amber-100">Não foi possível gerar o relatório.</p>}</div></div></header>
     <nav className="mt-5 flex gap-1 overflow-x-auto rounded-2xl border border-[#dfe6e2] bg-white p-1.5" aria-label="Seções da Pesquisa Exploratória">{tabs.map((item)=><button key={item.id} onClick={()=>setTab(item.id)} aria-current={tab===item.id?'page':undefined} className={`shrink-0 rounded-xl px-3 py-2.5 text-xs font-semibold transition ${tab===item.id?'bg-[#176b52] text-white':'text-[#68766e] hover:bg-[#f1f5f2]'}`}>{item.label}</button>)}</nav>
     <div className="mt-5 space-y-5">{tab==='visao'?<Overview onGo={setTab}/>:tab==='dados'?<DataView/>:tab==='espaco'?<SpaceView/>:tab==='tempo'?<TimeView/>:tab==='insights'?<InsightsView/>:tab==='estimacoes'?<EstimatesView/>:tab==='robustez'?<RobustnessView/>:<RecommendationsView onGo={setTab}/>}</div>
   </section>;
